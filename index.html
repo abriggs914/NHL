@@ -1,0 +1,3310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NHL Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ice: #e8f4fc;
+    --ice-dark: #c5dff0;
+    --rink: #0a1628;
+    --rink-mid: #112240;
+    --rink-light: #1a3a6b;
+    --accent: #00b4d8;
+    --accent2: #ff6b35;
+    --gold: #ffd166;
+    --green: #06d6a0;
+    --red: #ef476f;
+    --text: #e2eaf4;
+    --text-dim: #7a9bb5;
+    --card-bg: #0f2137;
+    --card-border: #1e3a5f;
+    --live-pulse: #00ff88;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--rink);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(0,180,216,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(26,58,107,0.3) 0%, transparent 60%);
+  }
+
+  /* ──── HEADER ──── */
+  header {
+    background: linear-gradient(135deg, #071523 0%, #0d2444 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo span { color: var(--accent); }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .spoiler-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--rink-light);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .spoiler-toggle:hover { background: #213d6e; border-color: var(--accent); }
+  .spoiler-toggle.active { background: #1a3a2e; border-color: var(--green); color: var(--green); }
+
+  .eye-icon { font-size: 1rem; }
+
+  /* ──── NAV TABS ──── */
+  nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--card-border);
+    background: var(--rink-mid);
+    padding: 0 24px;
+  }
+
+  .nav-tab {
+    padding: 14px 22px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ──── MAIN ──── */
+  main { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ──── DATE NAV ──── */
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px 24px;
+  }
+
+  .date-btn {
+    background: var(--rink-light);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .date-btn:hover { background: var(--accent); border-color: var(--accent); }
+
+  .date-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    min-width: 240px;
+    text-align: center;
+  }
+
+  .today-btn {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: var(--rink);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .today-btn:hover { opacity: 0.85; }
+
+  .refresh-info {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .refresh-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  /* ──── GAME CARDS GRID ──── */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+  }
+
+  .game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+    cursor: pointer;
+  }
+  .game-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .game-card.live { border-color: var(--live-pulse); box-shadow: 0 0 16px rgba(0,255,136,0.15); }
+  .game-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,180,216,0.35), 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(-2px);
+  }
+  .game-card.selected.live {
+    border-color: var(--live-pulse);
+    box-shadow: 0 0 0 2px rgba(0,255,136,0.3), 0 0 16px rgba(0,255,136,0.2);
+  }
+
+  /* ── Game Detail Panel ── */
+  #gameDetailPanel {
+    display: none;
+    margin-top: 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: slideUp 0.25s ease;
+  }
+  #gameDetailPanel.open { display: block; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-header {
+    background: linear-gradient(135deg, #0d2444 0%, #112240 100%);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+  }
+  .detail-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .detail-close {
+    background: rgba(239,71,111,0.15);
+    border: 1px solid rgba(239,71,111,0.3);
+    color: var(--red);
+    border-radius: 6px;
+    width: 28px; height: 28px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .detail-close:hover { background: rgba(239,71,111,0.3); }
+  .detail-loading {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; padding: 48px; color: var(--text-dim); font-size: 0.85rem;
+  }
+
+  .detail-section-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 12px 20px 8px;
+    border-top: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.12);
+  }
+  .detail-team-labels {
+    display: flex;
+    justify-content: space-around;
+    padding: 4px 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--accent);
+    background: rgba(0,0,0,0.08);
+  }
+
+  /* Linescore */
+  .detail-linescore-wrap { padding: 0 20px 14px; overflow-x: auto; }
+  .detail-linescore {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .detail-linescore th, .detail-linescore td {
+    padding: 8px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .detail-linescore th { color: var(--text-dim); font-size: 0.68rem; font-weight: 700; letter-spacing: 1px; }
+  .detail-linescore .ls-team { text-align: left; font-weight: 700; color: var(--text); }
+  .detail-linescore .ls-tot { font-weight: 800; color: var(--gold); font-family: 'Roboto Mono', monospace; }
+
+  /* Scoring summary */
+  .sg-period-label {
+    padding: 6px 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    background: rgba(0,180,216,0.05);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .detail-scoring-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .detail-scoring-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .detail-scoring-table tr:last-child td { border-bottom: none; }
+  .detail-scoring-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .sg-time { font-family: 'Roboto Mono', monospace; color: var(--text-dim); font-size: 0.72rem; white-space: nowrap; }
+  .sg-scorer { font-weight: 600; color: var(--text); }
+  .sg-assists { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
+  .sg-score { font-family: 'Roboto Mono', monospace; font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; }
+
+  /* Team stats */
+  .detail-team-stats {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .detail-team-stats td {
+    padding: 8px 14px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: 'Roboto Mono', monospace;
+    color: var(--text-dim);
+  }
+  .detail-team-stats .ts-label {
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--text-dim);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .detail-team-stats tr:last-child td { border-bottom: none; }
+  .detail-team-stats tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Goalie table */
+  .detail-goalie-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+  .detail-goalie-table th {
+    padding: 7px 12px;
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.15);
+  }
+  .detail-goalie-table td {
+    padding: 9px 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: 'Roboto Mono', monospace;
+    color: var(--text-dim);
+  }
+  .detail-goalie-table td:first-child {
+    font-family: inherit;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .detail-goalie-table tr:last-child td { border-bottom: none; }
+
+  /* Three stars */
+  .three-stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+  }
+  .star-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 90px;
+  }
+  .star-rank { font-size: 0.72rem; letter-spacing: 0.5px; }
+  .star-name { font-size: 0.82rem; font-weight: 700; color: var(--text); text-align: center; }
+  .star-meta { font-size: 0.68rem; color: var(--text-dim); text-align: center; }
+
+  /* Comparison grid (shared by card and detail panel) */
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--card-border);
+  }
+  .comparison-side {
+    background: var(--card-bg);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .comp-player-head { display: flex; align-items: center; gap: 10px; }
+  .comp-headshot {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--card-border);
+    background: var(--rink-light);
+    flex-shrink: 0;
+  }
+  .comp-headshot-placeholder {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--rink-light);
+    border: 2px solid var(--card-border);
+    flex-shrink: 0;
+  }
+  .comp-player-name { font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .comp-player-pos  { font-size: 0.68rem; color: var(--text-dim); margin-top: 2px; }
+  .comp-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .comp-stat {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--rink-mid);
+    border: 1px solid var(--card-border);
+    border-radius: 7px;
+    padding: 5px 10px;
+    min-width: 44px;
+  }
+  .comp-stat-val { font-family: 'Roboto Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--gold); line-height: 1.1; }
+  .comp-stat-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-top: 2px; }
+
+  /* EN badge */
+  .en-badge {
+    font-size: 0.62rem; font-weight: 800; letter-spacing: 0.5px;
+    padding: 2px 6px; border-radius: 4px;
+    background: rgba(239,71,111,0.18); color: var(--red);
+    border: 1px solid rgba(239,71,111,0.4);
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #0d2444 0%, #112240 100%);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .game-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .status-live { background: rgba(0,255,136,0.15); color: var(--live-pulse); border: 1px solid var(--live-pulse); }
+  .status-final { background: rgba(122,155,181,0.15); color: var(--text-dim); border: 1px solid #2a4060; }
+  .status-pre { background: rgba(0,180,216,0.12); color: var(--accent); border: 1px solid rgba(0,180,216,0.4); }
+  .status-ppd { background: rgba(255,107,53,0.12); color: var(--accent2); border: 1px solid rgba(255,107,53,0.4); }
+
+  .game-venue {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    color: var(--live-pulse);
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--live-pulse);
+    animation: pulse 1s infinite;
+  }
+
+  /* ── Live clock strip (in card header) ── */
+  .live-clock-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .live-period-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    color: var(--live-pulse);
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 4px;
+    padding: 1px 7px;
+    line-height: 1.4;
+  }
+  .live-clock-time {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    min-width: 3.2ch;
+  }
+
+  /* Clock running = green pulse; stopped/timeout = amber static */
+  .clock-running-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--live-pulse);
+    animation: pulse 0.8s infinite;
+    flex-shrink: 0;
+    title: "Clock running";
+  }
+  .clock-stopped-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    opacity: 0.85;
+    title: "Clock stopped";
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.75); }
+  }
+
+  /* Teams section */
+  .teams-section {
+    padding: 18px 16px;
+  }
+
+  .team-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+  }
+  .team-row:first-child { border-bottom: 1px solid rgba(255,255,255,0.06); }
+
+  .team-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    margin-right: 12px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  }
+  .team-logo-placeholder {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--rink-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-right: 12px;
+  }
+
+  .team-info { flex: 1; }
+  .team-name { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+  .team-record { font-size: 0.72rem; color: var(--text-dim); margin-top: 1px; }
+
+  .team-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+  .team-score.winning { color: var(--gold); }
+
+  /* Spoiler shield — only overlays the sensitive data rows */
+  .spoiler-wrap {
+    position: relative;
+  }
+  .spoiler-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 22, 40, 0.92);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 10;
+    cursor: pointer;
+    border-radius: 0;
+    transition: opacity 0.2s;
+  }
+  .spoiler-overlay span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .spoiler-overlay .lock-icon {
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
+  body.spoiler-off .spoiler-overlay { display: none; }
+
+  /* "Game Over" pill shown in header when spoiler is on and game is final */
+  .game-over-pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(122,155,181,0.12);
+    color: var(--text-dim);
+    border: 1px solid #2a4060;
+    border-radius: 20px;
+    padding: 2px 9px;
+  }
+  body.spoiler-off .game-over-pill { display: inline-flex; }
+  .game-over-pill { display: none; }
+
+  /* Card footer - scorers (horizontal gallery) */
+  .card-footer {
+    border-top: 1px solid var(--card-border);
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .scorers-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  /* Horizontal scroll gallery */
+  .scorer-gallery {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--card-border) transparent;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  .scorer-gallery::-webkit-scrollbar { height: 4px; }
+  .scorer-gallery::-webkit-scrollbar-track { background: transparent; }
+  .scorer-gallery::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+
+  .scorer-card {
+    flex: 0 0 160px;
+    background: var(--rink-mid);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    scroll-snap-align: start;
+    transition: border-color 0.15s;
+  }
+  .scorer-card:hover { border-color: rgba(0,180,216,0.4); }
+  .scorer-card.scorer-new {
+    border-color: rgba(0,255,136,0.4);
+    background: rgba(0,255,136,0.04);
+  }
+
+  .scorer-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+  .scorer-headshot {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--rink-light);
+    border: 1px solid var(--card-border);
+  }
+  .scorer-headshot-placeholder {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--rink-light);
+    flex-shrink: 0;
+    border: 1px solid var(--card-border);
+  }
+  .scorer-card-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .scorer-card-stat {
+    font-size: 0.7rem;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .scorer-card-meta {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .scorer-card-meta .s-team { color: var(--accent); font-weight: 700; }
+  .scorer-card-meta .s-strength {
+    display: inline-block;
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(255,209,102,0.15);
+    color: var(--gold);
+    border: 1px solid rgba(255,209,102,0.3);
+    margin-left: 2px;
+  }
+  .scorer-card-assists {
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+  .scorer-card-time {
+    font-size: 0.63rem;
+    font-family: 'Roboto Mono', monospace;
+    color: #4a6a85;
+    margin-top: 2px;
+  }
+
+  .scorer-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .scorer-card-score {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .new-badge {
+    position: absolute;
+    top: 5px; right: 5px;
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--live-pulse);
+    background: rgba(0,255,136,0.12);
+    border: 1px solid rgba(0,255,136,0.35);
+    border-radius: 3px;
+    padding: 1px 4px;
+  }
+
+  .highlight-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,107,53,0.18);
+    border: 1px solid rgba(255,107,53,0.4);
+    color: var(--accent2);
+    border-radius: 5px;
+    width: 24px; height: 24px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .highlight-btn:hover { background: rgba(255,107,53,0.38); }
+
+  /* ──── VIDEO MODAL ──── */
+  #videoModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.92);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.2s ease;
+    padding: 16px;
+  }
+  #videoModal.open { display: flex; }
+
+  .video-modal-inner {
+    position: relative;
+    width: min(1100px, 96vw);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--rink-mid);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 32px 100px rgba(0,0,0,0.85);
+  }
+
+  .video-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--card-border);
+    background: var(--rink);
+    flex-shrink: 0;
+  }
+  .video-modal-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 85%;
+  }
+  .video-modal-close {
+    background: rgba(239,71,111,0.15);
+    border: 1px solid rgba(239,71,111,0.3);
+    color: var(--red);
+    border-radius: 6px;
+    width: 32px; height: 32px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .video-modal-close:hover { background: rgba(239,71,111,0.35); }
+
+  .video-modal-body {
+    position: relative;
+    width: 100%;
+    /* Use aspect-ratio + flex to fill remaining height */
+    flex: 1;
+    min-height: 0;
+    background: #000;
+    /* Fallback: 16:9 aspect ratio via padding trick */
+    aspect-ratio: 16 / 9;
+    max-height: calc(92vh - 56px);
+  }
+  .video-modal-body iframe,
+  .video-modal-body video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .video-modal-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    padding: 20px;
+    text-align: center;
+  }
+  .video-modal-fallback a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 2px;
+    font-size: 1rem;
+  }
+
+  /* Game situation badge */
+  .game-situation {
+    display: flex;
+    gap: 6px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--card-border);
+    flex-wrap: wrap;
+  }
+
+  .situation-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(255,107,53,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(255,107,53,0.3);
+  }
+  .situation-badge.pp { background: rgba(255,209,102,0.15); color: var(--gold); border-color: rgba(255,209,102,0.3); }
+  .situation-badge.en { background: rgba(239,71,111,0.15); color: var(--red); border-color: rgba(239,71,111,0.3); }
+
+  .period-time {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .start-time {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-align: center;
+    padding: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ──── LOADING / EMPTY ──── */
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    gap: 16px;
+    color: var(--text-dim);
+  }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--card-border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .no-games {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+  }
+
+  /* ──── STANDINGS VIEW BAR ──── */
+  .standings-view-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 8px;
+  }
+  .view-btn {
+    flex: 1;
+    padding: 8px 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .view-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .view-btn.active { background: var(--rink-light); border-color: var(--accent); color: var(--accent); }
+
+  /* ──── STANDINGS ──── */
+  .standings-container { display: flex; flex-direction: column; gap: 32px; }
+
+  .division-block {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .division-header {
+    background: linear-gradient(135deg, #0d2444 0%, #112240 100%);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .division-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .conference-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--rink-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .standings-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .standings-table th {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.2);
+  }
+  .standings-table th:first-child { text-align: left; }
+
+  .standings-table td {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .standings-table td:first-child { text-align: left; }
+  .standings-table tr:last-child td { border-bottom: none; }
+  .standings-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+  .team-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .standings-logo {
+    width: 40px; height: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+  }
+  .standings-logo-placeholder {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--rink-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--text-dim);
+  }
+  .team-abbrev { font-weight: 700; color: var(--text); font-size: 0.85rem; }
+  .team-fullname { font-size: 0.72rem; color: var(--text-dim); }
+
+  .pts-cell { font-weight: 700; color: var(--gold); font-family: 'Roboto Mono', monospace; }
+  .pctg-cell { color: var(--accent); font-family: 'Roboto Mono', monospace; font-size: 0.75rem; }
+  .streak-cell { font-size: 0.72rem; }
+  .streak-w { color: var(--green); font-weight: 600; }
+  .streak-l { color: var(--red); font-weight: 600; }
+  .streak-ot { color: var(--gold); font-weight: 600; }
+
+  .wildcard-row td { background: rgba(0,180,216,0.04); }
+  .wildcard-divider td { border-top: 2px dashed rgba(0,180,216,0.3); }
+  .in-playoffs td:first-child { border-left: 3px solid var(--green); }
+
+  /* ──── PLAYOFF BRACKET TREE ──── */
+  .bracket-page { padding-bottom: 40px; }
+
+  .bracket-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .bracket-header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(255,209,102,0.3);
+  }
+  .bracket-header p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .bracket-reset-btn {
+    background: rgba(239,71,111,0.15);
+    border: 1px solid rgba(239,71,111,0.4);
+    color: var(--red);
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.18s;
+  }
+  .bracket-reset-btn:hover { background: rgba(239,71,111,0.3); }
+
+  /* Full bracket layout: West rounds flow left→center, East rounds flow right→center */
+  .bracket-outer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .bracket-conference {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+  .bracket-conference.west { flex-direction: row; }
+  .bracket-conference.east { flex-direction: row-reverse; }
+
+  .bracket-round-col {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 148px;
+    padding: 0 6px;
+    position: relative;
+  }
+
+  .round-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 8px 0 10px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+
+  .round-slots {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 0;
+  }
+
+  /* Each slot is a flex cell that vertically centers its matchup */
+  .bracket-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    flex: 1;
+    position: relative;
+    padding: 6px 0;
+  }
+
+  /* Connector lines */
+  .bracket-slot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    width: 6px;
+    height: 1px;
+    background: var(--card-border);
+  }
+  .bracket-conference.east .bracket-slot::after {
+    right: auto;
+    left: -6px;
+  }
+  .bracket-round-col:last-child .bracket-slot::after { display: none; }
+
+  /* Matchup card */
+  .b-matchup {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: default;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    position: relative;
+  }
+  .b-matchup:hover { border-color: rgba(0,180,216,0.5); }
+  .b-matchup.series-live { border-color: var(--live-pulse); box-shadow: 0 0 10px rgba(0,255,136,0.15); }
+  .b-matchup.series-done { border-color: var(--card-border); }
+
+  .b-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 9px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+    position: relative;
+  }
+  .b-team:first-of-type { border-bottom: 1px solid var(--card-border); }
+
+  /* Clickable only when this slot is ready to pick */
+  .b-team.pickable { color: var(--text); }
+  .b-team.pickable:hover { background: rgba(0,180,216,0.12); color: var(--accent); }
+
+  .b-team.winner {
+    background: rgba(6,214,160,0.1);
+    color: var(--green);
+    font-weight: 700;
+  }
+  .b-team.loser {
+    color: #3a5570;
+    text-decoration: line-through;
+    text-decoration-color: rgba(239,71,111,0.5);
+  }
+  .b-team.user-pick {
+    background: rgba(255,209,102,0.1);
+    color: var(--gold);
+  }
+  .b-team.tbd { color: #2a4060; cursor: default; font-style: italic; }
+
+  .b-seed {
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    background: var(--rink-light);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-family: 'Roboto Mono', monospace;
+    min-width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .b-logo {
+    width: 18px; height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .b-abbrev { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .b-wins {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    min-width: 14px;
+    text-align: right;
+  }
+  .b-wins.leading { color: var(--gold); }
+  .b-wins.champion { color: var(--green); }
+
+  .b-series-bar {
+    font-size: 0.58rem;
+    text-align: center;
+    padding: 3px 6px;
+    color: var(--text-dim);
+    background: rgba(0,0,0,0.25);
+    letter-spacing: 0.3px;
+    border-top: 1px solid var(--card-border);
+    line-height: 1.2;
+  }
+  .b-series-bar.live-bar { color: var(--live-pulse); }
+
+  /* Stanley Cup Final center column */
+  .bracket-final-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 170px;
+    padding: 0 8px;
+    position: relative;
+  }
+  .final-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 10px;
+    white-space: nowrap;
+  }
+  .champion-display {
+    text-align: center;
+    margin-top: 14px;
+    padding: 12px;
+    background: rgba(255,209,102,0.08);
+    border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 10px;
+  }
+  .champion-display .champ-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .champion-display .champ-team {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    color: #fff;
+  }
+  .champion-display img {
+    width: 48px; height: 48px;
+    object-fit: contain;
+    display: block;
+    margin: 6px auto 0;
+  }
+
+  /* Conference labels above bracket */
+  .conf-label-row {
+    display: flex;
+    margin-bottom: 0;
+  }
+  .conf-label-west, .conf-label-east {
+    flex: 1;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    text-align: center;
+    padding: 10px 0 6px;
+    border-bottom: 2px solid var(--card-border);
+    margin-bottom: 4px;
+  }
+  .conf-label-west { color: var(--accent); border-color: var(--accent); }
+  .conf-label-east { color: var(--accent2); border-color: var(--accent2); }
+  .conf-label-center { min-width: 186px; }
+
+  /* ──── NEW EVENT BANNER ──── */
+  .new-event-banner {
+    background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,180,216,0.08));
+    border-bottom: 1px solid rgba(0,255,136,0.25);
+    padding: 7px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+  .new-event-item {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--live-pulse);
+    letter-spacing: 0.3px;
+  }
+
+  /* ──── CARD LINKS BAR ──── */
+  .card-links-bar {
+    display: flex;
+    gap: 6px;
+    padding: 8px 14px;
+    border-top: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.15);
+    flex-wrap: wrap;
+  }
+  .card-link-btn {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 5px;
+    background: var(--rink-light);
+    border: 1px solid var(--card-border);
+    color: var(--accent);
+    text-decoration: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .card-link-btn:hover { background: rgba(0,180,216,0.15); border-color: var(--accent); }
+
+  /* ──── TIEBREAKER + EXPORT ──── */
+  .tiebreaker-section {
+    margin-top: 14px;
+    background: rgba(255,209,102,0.06);
+    border: 1px solid rgba(255,209,102,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tiebreaker-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .tiebreaker-input {
+    background: var(--rink);
+    border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 600;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .tiebreaker-input::-webkit-inner-spin-button,
+  .tiebreaker-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .tiebreaker-input:focus { border-color: var(--gold); }
+
+  .export-btn {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(6,214,160,0.2), rgba(0,180,216,0.2));
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    color: var(--green);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .export-btn:hover:not(:disabled) { background: linear-gradient(135deg, rgba(6,214,160,0.35), rgba(0,180,216,0.35)); }
+  .export-btn.export-disabled, .export-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: var(--card-border);
+    color: var(--text-dim);
+    background: transparent;
+  }
+  .error-msg {
+    background: rgba(239,71,111,0.1);
+    border: 1px solid rgba(239,71,111,0.3);
+    color: var(--red);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 0.82rem;
+    text-align: center;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<div id="videoModal" onclick="closeVideoModal(event)">
+  <div class="video-modal-inner">
+    <div class="video-modal-header">
+      <div class="video-modal-title" id="videoModalTitle">Goal Highlight</div>
+      <button class="video-modal-close" onclick="closeVideoModalDirect()">✕</button>
+    </div>
+    <div class="video-modal-body" id="videoModalBody">
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">🏒 <span>NHL</span> HUB</div>
+  <div class="header-controls">
+    <button class="spoiler-toggle" id="spoilerBtn" onclick="toggleSpoiler()">
+      <span class="eye-icon">🙈</span>
+      <span id="spoilerLabel">Hide Scores</span>
+    </button>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-tab active" onclick="switchTab('scores')">Scores</div>
+  <div class="nav-tab" onclick="switchTab('standings')">Standings</div>
+  <div class="nav-tab" onclick="switchTab('playoff')">Playoff Bracket</div>
+</nav>
+
+<main>
+
+  <!-- ═══ SCORES TAB ═══ -->
+  <div class="tab-content active" id="tab-scores">
+    <div class="date-nav">
+      <button class="date-btn" onclick="changeDate(-1)">◀</button>
+      <div class="date-display" id="dateDisplay">—</div>
+      <button class="date-btn" onclick="changeDate(1)">▶</button>
+      <button class="today-btn" onclick="goToToday()">Today</button>
+    </div>
+    <div class="refresh-info">
+      <span class="refresh-dot"></span>
+      <span id="refreshLabel">Auto-refreshing every 30s</span>
+    </div>
+    <div id="gamesContainer">
+      <div class="loading-state"><div class="spinner"></div><span>Loading games…</span></div>
+    </div>
+    <div id="gameDetailPanel">
+      <div class="detail-header">
+        <div class="detail-title" id="detailTitle">Game Details</div>
+        <button class="detail-close" onclick="closeGameDetail()">✕</button>
+      </div>
+      <div id="detailBody">
+        <div class="detail-loading"><div class="spinner"></div><span>Loading…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STANDINGS TAB ═══ -->
+  <div class="tab-content" id="tab-standings">
+    <div class="standings-view-bar">
+      <button class="view-btn active" onclick="setStandingsView('division', this)">Division</button>
+      <button class="view-btn" onclick="setStandingsView('conference', this)">Conference</button>
+      <button class="view-btn" onclick="setStandingsView('league', this)">League</button>
+      <button class="view-btn" onclick="setStandingsView('wildcard', this)">Wild Card</button>
+    </div>
+    <div id="standingsContainer">
+      <div class="loading-state"><div class="spinner"></div><span>Loading standings…</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ PLAYOFF TAB ═══ -->
+  <div class="tab-content" id="tab-playoff">
+    <div id="playoffContainer">
+      <div class="loading-state"><div class="spinner"></div><span>Loading bracket…</span></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let currentDate = new Date();
+let spoilerMode = false;
+let refreshTimer = null;
+let standingsLoaded = false;
+let playoffLoaded = false;
+let selectedGameId = null;
+let selectedGameCache = {}; // gameId → landing data cache
+
+const PROXY = 'https://corsproxy.io/?';
+const API = 'https://api-web.nhle.com/v1';
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function fmtDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dy = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dy}`;
+}
+
+function displayDate(d) {
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  const str = d.toLocaleDateString('en-US', opts).toUpperCase();
+  const today = fmtDate(new Date());
+  const cur = fmtDate(d);
+  if (cur === today) return 'TODAY — ' + str.split(', ').slice(1).join(', ');
+  return str;
+}
+
+async function fetchNHL(path) {
+  // Append a cache-busting timestamp so the browser never serves a stale cached response
+  const bust = `_cb=${Date.now()}`;
+  const separator = path.includes('?') ? '&' : '?';
+  const bustPath = path + separator + bust;
+  const url = PROXY + encodeURIComponent(API + bustPath);
+  console.log('[fetchNHL] GET', url);
+  const r = await fetch(url, {
+    cache: 'no-store',   // never read from or write to the HTTP cache
+    headers: {
+      'x-requested-with': 'XMLHttpRequest',
+    }
+  });
+  if (!r.ok) throw new Error('API error ' + r.status);
+  const data = await r.json();  // MUST be awaited — r.json() returns a Promise
+  console.log('[fetchNHL] response received for', path, '— games:', data?.games?.length ?? 'n/a');
+  return data;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SPOILER
+// ═══════════════════════════════════════════════════════════
+function toggleSpoiler() {
+  spoilerMode = !spoilerMode;
+  const btn = document.getElementById('spoilerBtn');
+  const lbl = document.getElementById('spoilerLabel');
+  if (spoilerMode) {
+    document.body.classList.remove('spoiler-off');
+    btn.classList.add('active');
+    btn.querySelector('.eye-icon').textContent = '🙉';
+    lbl.textContent = 'Show Scores';
+  } else {
+    document.body.classList.add('spoiler-off');
+    btn.classList.remove('active');
+    btn.querySelector('.eye-icon').textContent = '🙈';
+    lbl.textContent = 'Hide Scores';
+  }
+}
+// Start with scores visible
+document.body.classList.add('spoiler-off');
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'standings' && !standingsLoaded) loadStandings();
+  if (tab === 'playoff' && !playoffLoaded) loadPlayoff();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATE NAV
+// ═══════════════════════════════════════════════════════════
+function changeDate(delta) {
+  previousGamesSnapshot = {};
+  currentDate = new Date(currentDate);
+  currentDate.setDate(currentDate.getDate() + delta);
+  loadGames();
+}
+function goToToday() {
+  previousGamesSnapshot = {};
+  currentDate = new Date();
+  loadGames();
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAMES — with diff tracking, rich scorers, links
+// ═══════════════════════════════════════════════════════════
+
+// previousGamesSnapshot[gameId] = { goals: [...goalIds], gameState, awayScore, homeScore }
+let previousGamesSnapshot = {};
+let loadingGames = false;
+
+async function loadGames() {
+  console.log("loadingGames: '" + loadingGames + "'")
+  if (loadingGames) return; // prevent overlapping fetches
+  loadingGames = true;
+  clearTimeout(refreshTimer);
+  document.getElementById('dateDisplay').textContent = displayDate(currentDate);
+
+  const now = new Date();
+  const today = fmtDate(now);
+  const cur = fmtDate(currentDate);
+  const isToday = cur === today;
+
+  // Between midnight and 4am local time, late-running games from the previous
+  // calendar day may still be live. If the user is viewing "today" and the
+  // hour is early morning, also fetch the previous day and merge any live/
+  // recent games in so they appear at the top of the card grid.
+  const localHour = now.getHours();
+  const isEarlyMorning = isToday && localHour >= 0 && localHour < 4;
+  const prevDate = new Date(now);
+  prevDate.setDate(prevDate.getDate() - 1);
+  const prevDateStr = fmtDate(prevDate);
+
+  // Only show spinner on first load for this date
+  const hasSnapshot = Object.keys(previousGamesSnapshot).length > 0;
+  console.log("today: '" + today + "', cur: '" + cur + "', istoday: '" + isToday + "', hassnapshot: '" + hasSnapshot + "', earlyMorning: '" + isEarlyMorning + "'")
+  if (!hasSnapshot) {
+    document.getElementById('gamesContainer').innerHTML =
+      '<div class="loading-state"><div class="spinner"></div><span>Loading games…</span></div>';
+  }
+
+  try {
+    const data = await fetchNHL(`/score/${cur}`);
+    let games = data.games || [];
+
+    // In early-morning window, also pull yesterday's games and prepend any
+    // that are still live or finished after 10pm (to catch late-running games)
+    if (isEarlyMorning) {
+      try {
+        const prevData = await fetchNHL(`/score/${prevDateStr}`);
+        const prevGames = (prevData.games || []).filter(g => {
+          const state = g.gameState;
+          const isLiveOrRecent = state === 'LIVE' || state === 'CRIT';
+          // Also include final games that started late (after 9pm UTC-5 = 02:00 UTC next day)
+          if (state === 'FINAL' || state === 'OFF') {
+            const startUTC = g.startTimeUTC ? new Date(g.startTimeUTC) : null;
+            if (startUTC && startUTC.getUTCHours() >= 2) return true; // started late
+          }
+          return isLiveOrRecent;
+        });
+        if (prevGames.length) {
+          games = [...prevGames, ...games];
+        }
+      } catch(e2) {
+        console.warn('Could not fetch previous day games:', e2.message);
+      }
+    }
+
+    renderGames(games, !hasSnapshot);
+  } catch(e) {
+    document.getElementById('gamesContainer').innerHTML =
+      `<div class="error-msg">⚠️ Could not load games. ${e.message}</div>`;
+  } finally {
+    loadingGames = false;
+  }
+
+  if (isToday || isEarlyMorning) {
+    // Check if any games are live — poll faster during live action
+    const hasLive = [...document.querySelectorAll('.game-card.live')].length > 0;
+    const interval = hasLive ? 15000 : 25000;
+    refreshTimer = setTimeout(loadGames, interval);
+    document.getElementById('refreshLabel').textContent =
+      hasLive ? `Auto-refreshing every ${interval/1000}s (live game)` : `Auto-refreshing every ${interval/1000}s`;
+  } else {
+    previousGamesSnapshot = {}; // clear snapshot when leaving today
+    document.getElementById('refreshLabel').textContent = 'Historical data — no auto-refresh';
+  }
+}
+
+function renderGames(games, isFirstLoad) {
+  const container = document.getElementById('gamesContainer');
+  if (!games.length) {
+    container.innerHTML = '<div class="no-games">🏒 No games scheduled for this date.</div>';
+    previousGamesSnapshot = {};
+    return;
+  }
+
+  // Compute new events vs previous snapshot (skip on very first load)
+  const newEvents = {};
+  console.log("isFirstLoad '" + isFirstLoad + "'")
+  if (!isFirstLoad) {
+    for (const g of games) {
+      const id = g.id;
+      const away = g.awayTeam, home = g.homeTeam;
+      const awayScore = away.score ?? 0;
+      const homeScore = home.score ?? 0;
+      const prev = previousGamesSnapshot[id];
+      console.log("Render '" + id + "', (" + awayScore + ", " + homeScore + ")")
+      if (!prev) continue;
+      // console.log(JSON.stringify(prev, null, 2))
+      const prevGoalIds = new Set(prev.goals);
+      const newGoals = (g.goals || []).filter(gl => !prevGoalIds.has(goalKey(gl)));
+      const statusChanged = prev.gameState !== g.gameState;
+      if (newGoals.length || statusChanged) {
+        newEvents[id] = { newGoals, statusChanged, prevState: prev.gameState };
+      }
+    }
+  }
+
+  // Always update snapshot
+  const newSnapshot = {};
+  for (const g of games) {
+    newSnapshot[g.id] = {
+      goals: (g.goals || []).map(goalKey),
+      gameState: g.gameState,
+      awayScore: g.awayTeam?.score,
+      homeScore: g.homeTeam?.score
+    };
+  }
+  previousGamesSnapshot = newSnapshot;
+
+  // Always fully rebuild the grid so live state changes are reflected immediately
+  const grid = document.createElement('div');
+  grid.className = 'games-grid';
+  for (const g of games) {
+    grid.appendChild(buildCard(g, newEvents[g.id] || null));
+  }
+  container.innerHTML = '';
+  container.appendChild(grid);
+
+  // If selected game is live, invalidate its landing cache so next open gets fresh data
+  if (selectedGameId) {
+    const selGame = games.find(g => g.id === selectedGameId);
+    if (selGame) {
+      const selState = selGame.gameState;
+      if (selState === 'LIVE' || selState === 'CRIT') {
+        delete selectedGameCache[selectedGameId];
+        // Re-render detail panel silently with fresh data
+        fetchNHL(`/gamecenter/${selectedGameId}/landing`).then(landing => {
+          if (selectedGameId === selGame.id) {
+            selectedGameCache[selectedGameId] = landing;
+            renderGameDetail(landing, selGame);
+          }
+        }).catch(() => {});
+      }
+    }
+  }
+}
+
+function goalKey(gl) {
+  return `${gl.playerId}-${gl.timeInPeriod}-${gl.periodDescriptor?.number}`;
+}
+
+function buildCard(g, events) {
+  const card = document.createElement('div');
+  const state = g.gameState;
+  const isLive = state === 'LIVE' || state === 'CRIT';
+  const isFinal = state === 'FINAL' || state === 'OFF';
+  const isPre = state === 'FUT' || state === 'PRE';
+
+  card.className = 'game-card' + (isLive ? ' live' : '');
+  card.dataset.gameId = g.id;
+  if (selectedGameId === g.id) card.classList.add('selected');
+
+  // Click anywhere on card (except gallery scroll area and highlight buttons) → select
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.scorer-gallery')) return;
+    if (e.target.closest('.highlight-btn')) return;
+    if (e.target.closest('.card-link-btn')) return;
+    if (e.target.closest('.spoiler-overlay')) return;
+    selectGame(g.id, g);
+  });
+
+  const away = g.awayTeam, home = g.homeTeam;
+  const awayScore = away.score ?? 0;
+  const homeScore = home.score ?? 0;
+  const awayWin = isFinal && awayScore > homeScore;
+  const homeWin = isFinal && homeScore > awayScore;
+
+  // Empty net detection: prefer iceSurface goalie data over situation flags
+  // iceSurface lives in game landing; in score feed use situation as fallback
+  const iceSurface = g.summary?.iceSurface;
+  let enAway = false, enHome = false;
+  if (iceSurface) {
+    const awayGoalies = iceSurface.awayTeam?.goalies || [];
+    const homeGoalies = iceSurface.homeTeam?.goalies || [];
+    // Net is empty if no goalie is currently on ice (inNet === true)
+    enAway = awayGoalies.length > 0 && !awayGoalies.some(gl => gl.inNet === true);
+    enHome = homeGoalies.length > 0 && !homeGoalies.some(gl => gl.inNet === true);
+  } else {
+    // Fallback to situation flags from score feed
+    enAway = !!(g.situation?.awayTeam?.emptyNet);
+    enHome = !!(g.situation?.homeTeam?.emptyNet);
+  }
+
+  // Status label
+  let statusHtml = '';
+  if (isLive) statusHtml = `<span class="game-status status-live">Live</span>`;
+  else if (isFinal) {
+    const ot = g.periodDescriptor?.periodType;
+    const label = ot === 'OT' ? 'Final/OT' : ot === 'SO' ? 'Final/SO' : 'Final';
+    statusHtml = `<span class="game-status status-final">${label}</span>`;
+  }
+  else if (state === 'PPD') statusHtml = `<span class="game-status status-ppd">Postponed</span>`;
+  else statusHtml = `<span class="game-status status-pre">Upcoming</span>`;
+
+  // New event banner (only if spoiler is off = scores visible)
+  let newEventBanner = '';
+  if (events && !spoilerMode) {
+    const parts = [];
+    if (events.statusChanged) {
+      const stateLabel = { LIVE:'Game started', FINAL:'Game ended', CRIT:'Final minutes', OFF:'Final', PPD:'Postponed' };
+      parts.push(`<span class="new-event-item">📢 ${stateLabel[g.gameState] || g.gameState}</span>`);
+    }
+    for (const gl of events.newGoals) {
+      const scorer = gl.name?.default || 'Goal';
+      const team = gl.teamAbbrev?.default || '';
+      parts.push(`<span class="new-event-item">🚨 ${scorer} (${team})</span>`);
+    }
+    if (parts.length) {
+      newEventBanner = `<div class="new-event-banner">${parts.join('')}</div>`;
+    }
+  }
+
+  // Period / clock — built into the header for live games
+  let liveHeaderDetails = '';
+  let periodInfo = ''; // kept for the spoiler-wrap below, but only PP/EN badges now
+  if (isLive) {
+    const per = g.periodDescriptor;
+    const perNum = per?.number || 1;
+    const perType = per?.periodType;
+    const isOT = perType === 'OT';
+    const isSO = perType === 'SO';
+    const ordinal = isSO ? 'SO' : isOT ? 'OT' : (perNum === 1 ? '1ST' : perNum === 2 ? '2ND' : perNum === 3 ? '3RD' : `${perNum}OT`);
+    const clock = g.clock?.timeRemaining || '';
+    const inInt = g.clock?.inIntermission;
+    const clockRunning = g.clock?.running ?? false; // true = clock ticking, false = stoppage
+
+    // Running indicator: pulsing when clock is live, static when stopped/timeout
+    const runningDot = clockRunning
+      ? `<span class="clock-running-dot" title="Clock running"></span>`
+      : `<span class="clock-stopped-dot" title="Clock stopped / TV timeout"></span>`;
+
+    const clockStr = inInt ? 'INT' : (clock || '—');
+
+    // EN badges shown right in the header strip
+    const enBadges = [
+      enAway ? `<span class="en-badge">EN ${away.abbrev}</span>` : '',
+      enHome ? `<span class="en-badge">EN ${home.abbrev}</span>` : ''
+    ].filter(Boolean).join('');
+
+    liveHeaderDetails = `
+      <div class="live-clock-strip">
+        <span class="live-period-badge">${ordinal}</span>
+        <span class="live-clock-time">${clockStr}</span>
+        ${runningDot}
+        ${enBadges}
+      </div>`;
+
+    // Situation badges (PP only now — EN is in header)
+    const ppHome = g.situation?.homeTeam?.strength === 'pp';
+    const ppAway = g.situation?.awayTeam?.strength === 'pp';
+    if (ppHome || ppAway) {
+      periodInfo = `<div class="game-situation">
+        ${ppHome ? `<span class="situation-badge pp">🏒 ${home.abbrev} PP</span>` : ''}
+        ${ppAway ? `<span class="situation-badge pp">🏒 ${away.abbrev} PP</span>` : ''}
+      </div>`;
+    }
+  }
+
+  // Start time
+  let startTimeHtml = '';
+  if (isPre && g.startTimeUTC) {
+    const t = new Date(g.startTimeUTC);
+    const local = t.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', timeZoneName:'short' });
+    startTimeHtml = `<div class="start-time">${local}</div>`;
+  }
+
+  // ── Horizontal goal scorer gallery ────────────────────────
+  const goals = (g.goals || []).slice().reverse();
+  const newGoalKeys = new Set((events?.newGoals || []).map(goalKey));
+
+  let scorersHtml = '';
+  if (isFinal || isLive) {
+    const scorerCards = goals.map(gl => {
+      const teamAbbr = gl.teamAbbrev?.default || '';
+      const scorerName = gl.name?.default || 'Unknown';
+      const scorerGoals = gl.goalsToDate != null ? gl.goalsToDate : '';
+      const isNew = newGoalKeys.has(goalKey(gl));
+
+      const strength = gl.strength || '';
+      const strengthBadge = strength && strength !== 'ev'
+        ? `<span class="s-strength">${strength.toUpperCase()}</span>` : '';
+
+      const assistStr = (gl.assists || []).map(a => {
+        const lastName = a.name?.default?.split(' ').slice(-1)[0] || '';
+        const pts = a.assistsToDate != null ? ` (${a.assistsToDate})` : '';
+        return `${lastName}${pts}`;
+      }).join(', ');
+
+      const awayG = gl.awayScore ?? '';
+      const homeG = gl.homeScore ?? '';
+      const per = gl.periodDescriptor?.number;
+      const perType = gl.periodDescriptor?.periodType;
+      const perLabel = perType === 'OT' ? 'OT' : perType === 'SO' ? 'SO' : per ? `P${per}` : '';
+      const timeStr = gl.timeInPeriod || '';
+      const scoreCtx = (awayG !== '' && homeG !== '') ? `${away.abbrev} ${awayG} – ${home.abbrev} ${homeG}` : '';
+	  
+	  const headshotUrl = gl.mugshot
+      const headshotHtml = headshotUrl
+        ? `<img class="scorer-headshot" src="${headshotUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt=""><div class="scorer-headshot-placeholder" style="display:none"></div>`
+        : `<div class="scorer-headshot-placeholder"></div>`;
+
+      const hlUrl = gl.highlightClipSharingUrl || gl.highlightClip || '';
+      const hlBtn = hlUrl
+        ? `<button class="highlight-btn" onclick="openVideoModal(event,'${hlUrl.replace(/'/g,"\\'")}','${scorerName.replace(/'/g,"\\'")} — ${teamAbbr}')" title="Watch highlight">▶</button>`
+        : '';
+
+      return `<div class="scorer-card${isNew ? ' scorer-new' : ''}">
+        ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+        <div class="scorer-card-head">
+          ${headshotHtml}
+          <div>
+            <div class="scorer-card-name">${scorerName}</div>
+            ${scorerGoals !== '' ? `<div class="scorer-card-stat">${scorerGoals} G</div>` : ''}
+          </div>
+        </div>
+        <div class="scorer-card-meta">
+          <span class="s-team">${teamAbbr}</span>${strengthBadge}
+        </div>
+        ${assistStr ? `<div class="scorer-card-assists">${assistStr}</div>` : ''}
+        <div class="scorer-card-time">${[perLabel + (timeStr ? ' ' + timeStr : '')].filter(Boolean).join(' ')}</div>
+        <div class="scorer-card-footer">
+          <span class="scorer-card-score">${scoreCtx}</span>
+          ${hlBtn}
+        </div>
+      </div>`;
+    }).join('');
+
+    if (goals.length) {
+      scorersHtml = `<div class="card-footer">
+        <div class="scorers-label">Goal Scorers</div>
+        <div class="scorer-gallery">${scorerCards}</div>
+      </div>`;
+    }
+  }
+
+  // Pre-game: rich skater/goalie comparison from game landing matchup
+  let leadersHtml = '';
+  if (isPre) {
+    const matchup = g.matchup;
+    if (matchup) {
+      const skaterComp = matchup.skaterComparison;
+      const goalieComp = matchup.goalieComparison;
+      const season = '20252026';
+
+      const compHeadshot = (playerId, teamAbbr) => {
+        if (!playerId) return `<div class="comp-headshot-placeholder"></div>`;
+        const url = `https://assets.nhle.com/mugs/nhl/${season}/${teamAbbr}/${playerId}.png`;
+        return `<img class="comp-headshot" src="${url}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt=""><div class="comp-headshot-placeholder" style="display:none"></div>`;
+      };
+
+      const compStatBlock = (val, label) =>
+        `<div class="comp-stat"><div class="comp-stat-val">${val ?? '—'}</div><div class="comp-stat-label">${label}</div></div>`;
+
+      const compSide = (leader, teamAbbr, statKeys) => {
+        if (!leader) return `<div class="comparison-side"><div style="color:var(--text-dim);font-size:0.8rem;padding:8px">No data</div></div>`;
+        const pid = leader.playerId;
+        const name = leader.name?.default || leader.firstName?.default || '?';
+        const pos = leader.position || '';
+        const stats = statKeys.map(([key, label]) => compStatBlock(leader[key], label)).join('');
+        return `<div class="comparison-side">
+          <div class="comp-player-head">
+            ${compHeadshot(pid, teamAbbr)}
+            <div><div class="comp-player-name">${name}</div><div class="comp-player-pos">${pos}</div></div>
+          </div>
+          <div class="comp-stats">${stats}</div>
+        </div>`;
+      };
+
+      const skaterStats = [['points','PTS'],['goals','G'],['assists','A']];
+      const goalieStats = [['gaa','GAA'],['savePctg','SV%']];
+
+      let compHtml = '';
+
+      if (skaterComp) {
+        compHtml += `<div class="detail-section-label">Skater Matchup</div>
+          <div class="comparison-grid">
+            ${compSide(skaterComp.awayLeader, away.abbrev, skaterStats)}
+            ${compSide(skaterComp.homeLeader, home.abbrev, skaterStats)}
+          </div>`;
+      }
+      if (goalieComp) {
+        compHtml += `<div class="detail-section-label">Goalie Matchup</div>
+          <div class="comparison-grid">
+            ${compSide(goalieComp.awayLeader, away.abbrev, goalieStats)}
+            ${compSide(goalieComp.homeLeader, home.abbrev, goalieStats)}
+          </div>`;
+      }
+
+      if (compHtml) {
+        leadersHtml = `<div class="card-footer" style="padding:0">${compHtml}</div>`;
+      }
+    } else {
+      // Fallback: simple leaders from score feed
+      const awayLeaders = away.leaders || [];
+      const homeLeaders = home.leaders || [];
+      const allLeaders = [...awayLeaders.slice(0,1).map(l => ({...l, team: away.abbrev})),
+                          ...homeLeaders.slice(0,1).map(l => ({...l, team: home.abbrev}))];
+      if (allLeaders.length) {
+        const items = allLeaders.map(l => {
+          const name = l.name?.default || 'N/A';
+          const pts = l.value || '';
+          const cat = l.category || 'pts';
+          return `<div class="scorer-item">
+            <span class="scorer-name">${name} <span style="color:var(--accent);font-size:0.7rem">${l.team}</span></span>
+            <span class="scorer-goals">${pts} ${cat}</span>
+          </div>`;
+        }).join('');
+        leadersHtml = `<div class="card-footer">
+          <div class="scorers-label">Team Leaders</div>
+          <div class="scorer-list">${items}</div>
+        </div>`;
+      }
+    }
+  }
+
+  // Logos
+  const awayLogoUrl = away.logo || away.darkLogo;
+  const homeLogoUrl = home.logo || home.darkLogo;
+  const awayLogoHtml = awayLogoUrl
+    ? `<img class="team-logo" src="${awayLogoUrl}" alt="${away.abbrev}" onerror="this.style.display='none'">`
+    : `<div class="team-logo-placeholder">${away.abbrev}</div>`;
+  const homeLogoHtml = homeLogoUrl
+    ? `<img class="team-logo" src="${homeLogoUrl}" alt="${home.abbrev}" onerror="this.style.display='none'">`
+    : `<div class="team-logo-placeholder">${home.abbrev}</div>`;
+
+  const awayRecordStr = away.record ? `<div class="team-record">${away.record}</div>` : '';
+  const homeRecordStr = home.record ? `<div class="team-record">${home.record}</div>` : '';
+
+  const venue = g.venue?.default || '';
+
+  // Gamecenter & stream links
+  const gcUrl = g.gameCenterLink ? `https://www.nhl.com${g.gameCenterLink}` : '';
+  const gcBtn = gcUrl ? `<a class="card-link-btn" href="${gcUrl}" target="_blank" rel="noopener">GameCenter</a>` : '';
+  const streamUrl = (g.tvBroadcasts || []).length > 0 ? `https://www.nhl.com${g.gameCenterLink || ''}` : '';
+  // streaming broadcastLinks if available
+  const broadcastBtns = (g.tvBroadcasts || []).slice(0, 2).map(b => {
+    const name = b.network || b.name || 'Watch';
+    const url = b.url || gcUrl;
+    return url ? `<a class="card-link-btn" href="${url}" target="_blank" rel="noopener">${name}</a>` : '';
+  }).join('');
+
+  const linksBar = (gcBtn || broadcastBtns) ? `<div class="card-links-bar">${gcBtn}${broadcastBtns}</div>` : '';
+
+  // Spoiler
+  const spoilerOverlay = (isFinal || isLive)
+    ? `<div class="spoiler-overlay" onclick="revealSection(this)"><span class="lock-icon">🔒</span><span>Reveal Score</span></div>`
+    : '';
+
+  const finalIndicator = isFinal
+    ? `<span class="game-over-pill">Game Over</span>`
+    : '';
+
+  card.innerHTML = `
+    ${newEventBanner}
+    <div class="card-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${statusHtml}
+        ${isLive ? `<div class="live-indicator"><span class="live-dot"></span>LIVE</div>` : ''}
+        ${finalIndicator}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${isLive ? liveHeaderDetails : `<div class="game-venue">${venue}</div>`}
+      </div>
+    </div>
+    <div class="teams-section">
+      <div class="team-row">
+        ${awayLogoHtml}
+        <div class="team-info">
+          <div class="team-name">${away.name?.default || away.placeName?.default || away.abbrev}</div>
+          ${awayRecordStr}
+        </div>
+        <div class="spoiler-wrap" style="min-width:36px">
+          ${spoilerOverlay}
+          <div class="team-score ${awayWin ? 'winning' : ''}">${!isPre ? awayScore : ''}</div>
+        </div>
+      </div>
+      <div class="team-row">
+        ${homeLogoHtml}
+        <div class="team-info">
+          <div class="team-name">${home.name?.default || home.placeName?.default || home.abbrev}</div>
+          ${homeRecordStr}
+        </div>
+        <div class="spoiler-wrap" style="min-width:36px">
+          ${spoilerOverlay}
+          <div class="team-score ${homeWin ? 'winning' : ''}">${!isPre ? homeScore : ''}</div>
+        </div>
+      </div>
+    </div>
+    ${linksBar}
+    <div class="spoiler-wrap">
+      ${(isLive || isFinal) && spoilerOverlay ? `<div class="spoiler-overlay" onclick="revealSection(this)"><span class="lock-icon">🔒</span><span>Reveal Details</span></div>` : ''}
+      ${periodInfo}
+      ${startTimeHtml}
+    </div>
+    <div class="spoiler-wrap">
+      ${(isLive || isFinal) && spoilerOverlay ? `<div class="spoiler-overlay" onclick="revealSection(this)"><span class="lock-icon">🔒</span><span>Reveal Scorers</span></div>` : ''}
+      ${scorersHtml}
+      ${leadersHtml}
+    </div>
+  `;
+  return card;
+}
+
+function revealSection(overlay) {
+  const card = overlay.closest('.game-card');
+  card.querySelectorAll('.spoiler-overlay').forEach(el => el.style.display = 'none');
+}
+
+let standingsView = 'division';
+let cachedStandings = [];
+
+function setStandingsView(view, btn) {
+  standingsView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (cachedStandings.length) renderStandings(cachedStandings);
+}
+async function loadStandings() {
+  try {
+    const data = await fetchNHL('/standings/now');
+    cachedStandings = data.standings || [];
+    renderStandings(cachedStandings);
+    standingsLoaded = true;
+  } catch(e) {
+    document.getElementById('standingsContainer').innerHTML = `<div class="error-msg">⚠️ Could not load standings. ${e.message}</div>`;
+  }
+}
+
+function renderStandings(teams) {
+  if (standingsView === 'division') renderDivisionView(teams);
+  else if (standingsView === 'conference') renderConferenceView(teams);
+  else if (standingsView === 'league') renderLeagueView(teams);
+  else if (standingsView === 'wildcard') renderWildcardView(teams);
+}
+
+function renderDivisionView(teams) {
+  const divMap = {};
+  for (const t of teams) {
+    const div = t.divisionName;
+    const conf = t.conferenceName;
+    if (!divMap[div]) divMap[div] = { conf, teams: [] };
+    divMap[div].teams.push(t);
+  }
+  for (const d of Object.values(divMap)) d.teams.sort((a,b) => b.points - a.points);
+  const divOrder = ['Atlantic', 'Metropolitan', 'Central', 'Pacific'];
+  let html = '<div class="standings-container">';
+  for (const divName of divOrder) {
+    const div = divMap[divName];
+    if (!div) continue;
+    html += buildDivisionTable(divName, div.conf, div.teams, 'division');
+  }
+  html += '</div>';
+  document.getElementById('standingsContainer').innerHTML = html;
+}
+
+function renderConferenceView(teams) {
+  const confMap = {};
+  for (const t of teams) {
+    const c = t.conferenceName;
+    if (!confMap[c]) confMap[c] = [];
+    confMap[c].push(t);
+  }
+  for (const c of Object.values(confMap)) c.sort((a,b) => b.points - a.points);
+  let html = '<div class="standings-container">';
+  for (const [confName, confTeams] of Object.entries(confMap).sort()) {
+    html += buildDivisionTable(confName + ' Conference', '', confTeams, 'conference');
+  }
+  html += '</div>';
+  document.getElementById('standingsContainer').innerHTML = html;
+}
+
+function renderLeagueView(teams) {
+  const sorted = [...teams].sort((a,b) => b.points - a.points || b.pointPctg - a.pointPctg);
+  let html = '<div class="standings-container">';
+  html += buildDivisionTable('League', '', sorted, 'league');
+  html += '</div>';
+  document.getElementById('standingsContainer').innerHTML = html;
+}
+
+function renderWildcardView(teams) {
+  const divMap = { Atlantic: [], Metropolitan: [], Central: [], Pacific: [] };
+  for (const t of teams) {
+    if (divMap[t.divisionName]) divMap[t.divisionName].push(t);
+  }
+  for (const d of Object.values(divMap)) d.sort((a,b) => b.points - a.points);
+
+  // East: Top 3 from each division + 2 wildcards from rest
+  const eastDiv1Top = divMap['Atlantic'].slice(0,3);
+  const eastDiv2Top = divMap['Metropolitan'].slice(0,3);
+  const eastWC = [...divMap['Atlantic'].slice(3), ...divMap['Metropolitan'].slice(3)]
+    .sort((a,b) => b.points - a.points);
+
+  const westDiv1Top = divMap['Central'].slice(0,3);
+  const westDiv2Top = divMap['Pacific'].slice(0,3);
+  const westWC = [...divMap['Central'].slice(3), ...divMap['Pacific'].slice(3)]
+    .sort((a,b) => b.points - a.points);
+
+  let html = '<div class="standings-container">';
+  html += buildWildcardBlock('Eastern Conference', 'Atlantic', eastDiv1Top, 'Metropolitan', eastDiv2Top, eastWC);
+  html += buildWildcardBlock('Western Conference', 'Central', westDiv1Top, 'Pacific', westDiv2Top, westWC);
+  html += '</div>';
+  document.getElementById('standingsContainer').innerHTML = html;
+}
+
+function buildWildcardBlock(confName, div1Name, div1Teams, div2Name, div2Teams, wcTeams) {
+  const buildMiniTable = (label, teamsList, showWCLine) => {
+    const rows = teamsList.map((t, i) => {
+      const logo = t.teamLogo ? `<img class="standings-logo" src="${t.teamLogo}" alt="${t.teamAbbrev?.default}" onerror="this.style.display='none'">` : `<div class="standings-logo-placeholder">${t.teamAbbrev?.default||'?'}</div>`;
+      const streakCode = t.streakCode || '-';
+      const streakCount = t.streakCount || '-';
+      const streak = streakCode + streakCount;
+      const sc = streak.startsWith('W') ? 'streak-w' : streak.startsWith('L') ? 'streak-l' : streak.startsWith('O') ? 'streak-ot' : '';
+      const wc = showWCLine && i === 2;
+      return `<tr class="${i < (showWCLine ? 3 : 3) ? 'in-playoffs' : ''} ${wc ? 'wildcard-divider' : ''}">
+        <td><div class="team-cell">${logo}<div><div class="team-abbrev">${t.teamAbbrev?.default||''}</div><div class="team-fullname">${t.teamName?.default||''}</div></div></div></td>
+        <td>${t.gamesPlayed||0}</td><td>${t.wins||0}</td><td>${t.losses||0}</td><td>${t.otLosses||0}</td>
+        <td class="pts-cell">${t.points||0}</td>
+        <td class="pctg-cell">${t.pointPctg?.toFixed(3)||'.000'}</td>
+        <td class="${sc} streak-cell">${streak}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="margin-bottom:4px">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);padding:8px 16px;border-bottom:1px solid var(--card-border)">${label}</div>
+      <table class="standings-table"><thead><tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>OT</th><th>PTS</th><th>P%</th><th>STK</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  };
+
+  const wcRows = wcTeams.map((t, i) => {
+    const logo = t.teamLogo ? `<img class="standings-logo" src="${t.teamLogo}" alt="${t.teamAbbrev?.default}" onerror="this.style.display='none'">` : `<div class="standings-logo-placeholder">${t.teamAbbrev?.default||'?'}</div>`;
+    const streakCode = t.streakCode || '-';
+    const streakCount = t.streakCount || '-';
+    const streak = streakCode + streakCount;
+    const sc = streak.startsWith('W') ? 'streak-w' : streak.startsWith('L') ? 'streak-l' : streak.startsWith('O') ? 'streak-ot' : '';
+    return `<tr class="${i < 2 ? 'in-playoffs' : ''} ${i === 2 ? 'wildcard-divider' : ''}">
+      <td><div class="team-cell">${logo}<div><div class="team-abbrev">${t.teamAbbrev?.default||''}</div><div class="team-fullname">${t.teamName?.default||''}</div></div></div></td>
+      <td>${t.gamesPlayed||0}</td><td>${t.wins||0}</td><td>${t.losses||0}</td><td>${t.otLosses||0}</td>
+      <td class="pts-cell">${t.points||0}</td>
+      <td class="pctg-cell">${t.pointPctg?.toFixed(3)||'.000'}</td>
+      <td class="${sc} streak-cell">${streak}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="division-block">
+    <div class="division-header">
+      <div class="division-name">${confName}</div>
+      <div class="conference-tag">Wild Card Race</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--card-border)">
+      ${buildMiniTable(div1Name, div1Teams, false)}
+      ${buildMiniTable(div2Name, div2Teams, false)}
+    </div>
+    <div>
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);padding:8px 16px;border-bottom:1px solid var(--card-border);background:rgba(0,180,216,0.05)">Wild Card</div>
+      <table class="standings-table"><thead><tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>OT</th><th>PTS</th><th>P%</th><th>STK</th></tr></thead><tbody>${wcRows}</tbody></table>
+    </div>
+  </div>`;
+}
+
+function buildDivisionTable(divName, conf, teams, viewMode) {
+  const rows = teams.map((t, i) => {
+    const logo = t.teamLogo;
+    const logoHtml = logo
+      ? `<img class="standings-logo" src="${logo}" alt="${t.teamAbbrev?.default}" onerror="this.style.display='none'">`
+      : `<div class="standings-logo-placeholder">${t.teamAbbrev?.default || '?'}</div>`;
+
+    const streakCode = t.streakCode || '-';
+    const streakCount = t.streakCount || '-';
+    const streak = streakCode + streakCount;
+    let streakClass = '';
+    if (streak.startsWith('W')) streakClass = 'streak-w';
+    else if (streak.startsWith('L')) streakClass = 'streak-l';
+    else if (streak.startsWith('O')) streakClass = 'streak-ot';
+
+    const inPlayoffs = viewMode === 'league' ? i < 16 : viewMode === 'conference' ? i < 8 : i < 3;
+    const isWCLine = viewMode === 'league' ? i === 16 : viewMode === 'conference' ? i === 8 : i === 3;
+
+    // For league/conference view, show division name in team cell
+    const divLabel = (viewMode === 'league' || viewMode === 'conference') && t.divisionName
+      ? `<span style="font-size:0.62rem;color:var(--accent);margin-left:4px">${t.divisionAbbrev || t.divisionName?.slice(0,3).toUpperCase()}</span>`
+      : '';
+
+    return `<tr class="${inPlayoffs ? 'in-playoffs' : ''} ${isWCLine ? 'wildcard-divider' : ''}">
+      <td><div class="team-cell">
+        ${logoHtml}
+        <div>
+          <div class="team-abbrev">${t.teamAbbrev?.default || ''}${divLabel}</div>
+          <div class="team-fullname">${t.teamName?.default || ''}</div>
+        </div>
+      </div></td>
+      <td>${t.gamesPlayed || 0}</td>
+      <td>${t.wins || 0}</td>
+      <td>${t.losses || 0}</td>
+      <td>${t.otLosses || 0}</td>
+      <td class="pts-cell">${t.points || 0}</td>
+      <td class="pctg-cell">${t.pointPctg?.toFixed(3) || '.000'}</td>
+      <td>${t.goalFor || 0}</td>
+      <td>${t.goalAgainst || 0}</td>
+      <td class="${streakClass} streak-cell">${streak}</td>
+      <td>${t.l10Wins || 0}-${t.l10Losses || 0}-${t.l10OtLosses || 0}</td>
+    </tr>`;
+  }).join('');
+
+  const confTag = conf ? `<div class="conference-tag">${conf} Conference</div>` : '';
+
+  return `<div class="division-block">
+    <div class="division-header">
+      <div class="division-name">${divName}</div>
+      ${confTag}
+    </div>
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>GP</th><th>W</th><th>L</th><th>OT</th>
+          <th>PTS</th><th>P%</th>
+          <th>GF</th><th>GA</th>
+          <th>STK</th><th>L10</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PLAYOFF BRACKET — Interactive Tree
+// ═══════════════════════════════════════════════════════════
+
+// bracketState[slotId] = { top, bot, topWins, botWins, winner, userPick, live, seriesLabel }
+// slotId format: "W-R1-0", "E-R2-1", "CUP"
+let bracketState = {};
+let rawSeriesData = [];   // from API
+let useProjection = false;
+
+async function loadPlayoff() {
+  try {
+    const season = '20242025';
+    const data = await fetchNHL(`/playoff-bracket/${season}`);
+    rawSeriesData = data.series || [];
+    if (!rawSeriesData.length) throw new Error('no series');
+    initBracketFromAPI(rawSeriesData);
+    playoffLoaded = true;
+  } catch(e) {
+    try {
+      const standingsData = await fetchNHL('/standings/now');
+      useProjection = true;
+      initBracketFromStandings(standingsData.standings || []);
+      playoffLoaded = true;
+    } catch(e2) {
+      document.getElementById('playoffContainer').innerHTML = `<div class="error-msg">⚠️ Could not load playoff data. ${e2.message}</div>`;
+    }
+  }
+}
+
+// ── Build state from live API data ──────────────────────────
+function initBracketFromAPI(series) {
+  bracketState = {};
+
+  // Split by conference and round
+  const westSeries = series.filter(s => s.conferenceName === 'Western' || s.conference === 'Western');
+  const eastSeries = series.filter(s => s.conferenceName === 'Eastern' || s.conference === 'Eastern');
+  const finalSeries = series.find(s => s.round === 4 && !s.conferenceName) || series.find(s => s.round === 4);
+
+  const pushSlots = (conf, confSeries) => {
+    // Sort each round's series by their seriesCode or seed order
+    for (let r = 1; r <= 3; r++) {
+      const roundSeries = confSeries.filter(s => s.round === r)
+        .sort((a,b) => (a.seriesCode || a.topSeedTeam?.seed || 0) - (b.seriesCode || b.topSeedTeam?.seed || 0));
+      roundSeries.forEach((s, i) => {
+        const id = `${conf}-R${r}-${i}`;
+        const topW = s.topSeedWins ?? 0;
+        const botW = s.bottomSeedWins ?? 0;
+        const done = topW === 4 || botW === 4;
+        bracketState[id] = {
+          top: teamFromAPI(s.topSeedTeam),
+          bot: teamFromAPI(s.bottomSeedTeam),
+          topWins: topW,
+          botWins: botW,
+          winner: done ? (topW === 4 ? 'top' : 'bot') : null,
+          userPick: null,
+          live: !done && (topW > 0 || botW > 0),
+          seriesLabel: s.seriesLetter || ''
+        };
+      });
+    }
+  };
+
+  pushSlots('W', westSeries);
+  pushSlots('E', eastSeries);
+
+  // Final
+  if (finalSeries) {
+    const topW = finalSeries.topSeedWins ?? 0;
+    const botW = finalSeries.bottomSeedWins ?? 0;
+    const done = topW === 4 || botW === 4;
+    bracketState['CUP'] = {
+      top: teamFromAPI(finalSeries.topSeedTeam),
+      bot: teamFromAPI(finalSeries.bottomSeedTeam),
+      topWins: topW,
+      botWins: botW,
+      winner: done ? (topW === 4 ? 'top' : 'bot') : null,
+      userPick: null,
+      live: !done && (topW > 0 || botW > 0)
+    };
+  } else {
+    bracketState['CUP'] = emptySlot();
+  }
+
+  // Fill later rounds from winners if API gave us that data
+  propagateWinners();
+  renderBracket();
+}
+
+function teamFromAPI(t) {
+  if (!t) return null;
+  return {
+    abbrev: t.abbrev || t.teamAbbrev || '?',
+    logo: t.logo || t.teamLogo || '',
+    seed: t.seed ?? null,
+    name: t.name || t.teamName || t.abbrev || '?'
+  };
+}
+
+// ── Build state from standings projection ───────────────────
+function initBracketFromStandings(standings) {
+  bracketState = {};
+  const divMap = { Atlantic:[], Metropolitan:[], Central:[], Pacific:[] };
+  for (const t of standings) { if (divMap[t.divisionName]) divMap[t.divisionName].push(t); }
+  for (const d of Object.values(divMap)) d.sort((a,b) => b.points - a.points);
+
+  const mkTeam = (t, seed) => t ? { abbrev: t.teamAbbrev?.default||'?', logo: t.teamLogo||'', seed, name: t.teamName?.default||'', points: t.points||0 } : null;
+
+  // West: Central and Pacific top 3, then WC from remaining
+  const cTop = divMap['Central'].slice(0,3);
+  const pTop = divMap['Pacific'].slice(0,3);
+  const wWC = [...divMap['Central'].slice(3), ...divMap['Pacific'].slice(3)].sort((a,b)=>b.points-a.points).slice(0,2);
+  // wWC[0] = WC1 (stronger), wWC[1] = WC2 (weaker)
+
+  const c1pts = cTop[0]?.points||0, p1pts = pTop[0]?.points||0;
+  const pacificIsWestSeed1 = p1pts >= c1pts;
+
+  // User-specified order top-to-bottom on left side:
+  //   slot0: P1 vs WC2 (if Pacific is #1 west seed) else P1 vs WC1
+  //   slot1: P2 vs P3
+  //   slot2: C2 vs C3
+  //   slot3: C1 vs WC1 (if Pacific is #1 west seed) else C1 vs WC2
+  let westR1;
+  if (pacificIsWestSeed1) {
+    westR1 = [
+      { top: mkTeam(pTop[0], 1), bot: mkTeam(wWC[1], 8) },  // P1 vs WC2
+      { top: mkTeam(pTop[1], 3), bot: mkTeam(pTop[2], 6) },  // P2 vs P3
+      { top: mkTeam(cTop[1], 4), bot: mkTeam(cTop[2], 7) },  // C2 vs C3
+      { top: mkTeam(cTop[0], 2), bot: mkTeam(wWC[0], 5) },   // C1 vs WC1
+    ];
+  } else {
+    // Central is west seed 1
+    westR1 = [
+      { top: mkTeam(pTop[0], 2), bot: mkTeam(wWC[0], 5) },   // P1 vs WC1
+      { top: mkTeam(pTop[1], 3), bot: mkTeam(pTop[2], 6) },   // P2 vs P3
+      { top: mkTeam(cTop[1], 4), bot: mkTeam(cTop[2], 7) },   // C2 vs C3
+      { top: mkTeam(cTop[0], 1), bot: mkTeam(wWC[1], 8) },    // C1 vs WC2
+    ];
+  }
+
+  // East: Atlantic and Metropolitan top 3, then WC
+  const aTop = divMap['Atlantic'].slice(0,3);
+  const mTop = divMap['Metropolitan'].slice(0,3);
+  const eWC = [...divMap['Atlantic'].slice(3), ...divMap['Metropolitan'].slice(3)].sort((a,b)=>b.points-a.points).slice(0,2);
+  const a1pts = aTop[0]?.points||0, m1pts = mTop[0]?.points||0;
+  const atlanticIsEastSeed1 = a1pts >= m1pts;
+
+  // Mirror of west: top-to-bottom on right (East) side:
+  //   slot0: A1 vs WC2 (if Atlantic is #1) else A1 vs WC1
+  //   slot1: A2 vs A3
+  //   slot2: M2 vs M3
+  //   slot3: M1 vs WC1 (if Atlantic is #1) else M1 vs WC2
+  let eastR1;
+  if (atlanticIsEastSeed1) {
+    eastR1 = [
+      { top: mkTeam(aTop[0], 1), bot: mkTeam(eWC[1], 8) },  // A1 vs WC2
+      { top: mkTeam(aTop[1], 3), bot: mkTeam(aTop[2], 6) },  // A2 vs A3
+      { top: mkTeam(mTop[1], 4), bot: mkTeam(mTop[2], 7) },  // M2 vs M3
+      { top: mkTeam(mTop[0], 2), bot: mkTeam(eWC[0], 5) },   // M1 vs WC1
+    ];
+  } else {
+    eastR1 = [
+      { top: mkTeam(mTop[0], 1), bot: mkTeam(eWC[1], 8) },   // M1 vs WC2
+      { top: mkTeam(mTop[1], 3), bot: mkTeam(mTop[2], 6) },   // M2 vs M3
+      { top: mkTeam(aTop[1], 4), bot: mkTeam(aTop[2], 7) },   // A2 vs A3
+      { top: mkTeam(aTop[0], 2), bot: mkTeam(eWC[0], 5) },    // A1 vs WC1
+    ];
+  }
+
+  const allR1 = { W: westR1, E: eastR1 };
+  ['W','E'].forEach(conf => {
+    allR1[conf].forEach((m, i) => {
+      bracketState[`${conf}-R1-${i}`] = { top:m.top, bot:m.bot, topWins:0, botWins:0, winner:null, userPick:null, live:false };
+    });
+    for (let r = 2; r <= 3; r++) {
+      const count = r === 2 ? 2 : 1;
+      for (let i = 0; i < count; i++) {
+        bracketState[`${conf}-R${r}-${i}`] = emptySlot();
+      }
+    }
+  });
+  bracketState['CUP'] = emptySlot();
+  renderBracket();
+}
+
+function emptySlot() {
+  return { top:null, bot:null, topWins:0, botWins:0, winner:null, userPick:null, live:false };
+}
+
+// ── Propagate API winners into subsequent rounds ─────────────
+function propagateWinners() {
+  ['W','E'].forEach(conf => {
+    // R1 winners feed R2
+    for (let i = 0; i < 4; i++) {
+      const slot = bracketState[`${conf}-R1-${i}`];
+      if (!slot?.winner) continue;
+      const winner = slot.winner === 'top' ? slot.top : slot.bot;
+      const r2idx = Math.floor(i / 2);
+      const r2slot = bracketState[`${conf}-R2-${r2idx}`];
+      if (!r2slot) continue;
+      if (i % 2 === 0) r2slot.top = r2slot.top || winner;
+      else r2slot.bot = r2slot.bot || winner;
+    }
+    // R2 winners feed R3
+    for (let i = 0; i < 2; i++) {
+      const slot = bracketState[`${conf}-R2-${i}`];
+      if (!slot?.winner) continue;
+      const winner = slot.winner === 'top' ? slot.top : slot.bot;
+      const r3slot = bracketState[`${conf}-R3-0`];
+      if (!r3slot) continue;
+      if (i === 0) r3slot.top = r3slot.top || winner;
+      else r3slot.bot = r3slot.bot || winner;
+    }
+    // R3 winner feeds CUP
+    const cfSlot = bracketState[`${conf}-R3-0`];
+    if (cfSlot?.winner) {
+      const winner = cfSlot.winner === 'top' ? cfSlot.top : cfSlot.bot;
+      if (conf === 'W') bracketState['CUP'].top = bracketState['CUP'].top || winner;
+      else bracketState['CUP'].bot = bracketState['CUP'].bot || winner;
+    }
+  });
+}
+
+// ── User picks a winner ──────────────────────────────────────
+function pickWinner(slotId, side) {
+  const slot = bracketState[slotId];
+  if (!slot) return;
+  // Only allow picking if the team exists and slot not already officially decided
+  const team = side === 'top' ? slot.top : slot.bot;
+  if (!team) return;
+  if (slot.winner) return; // API says it's done, no overriding
+
+  // Toggle: clicking same pick removes it
+  if (slot.userPick === side) {
+    slot.userPick = null;
+    // Remove downstream picks that depended on this
+    clearDownstream(slotId, side);
+  } else {
+    const prevPick = slot.userPick;
+    slot.userPick = side;
+    if (prevPick) clearDownstream(slotId, prevPick);
+    // Advance winner to next round
+    advanceUserPick(slotId, team);
+  }
+  renderBracket();
+}
+
+function advanceUserPick(slotId, team) {
+  if (slotId === 'CUP') return; // CUP is the final destination, nothing to advance to
+  const parts = slotId.split('-');
+  const conf = parts[0];
+  const round = parseInt(parts[1].replace('R',''));
+  const idx = parseInt(parts[2]);
+
+  let nextId, nextSide;
+  if (round === 1) {
+    nextId = `${conf}-R2-${Math.floor(idx/2)}`;
+    nextSide = idx % 2 === 0 ? 'top' : 'bot';
+  } else if (round === 2) {
+    nextId = `${conf}-R3-0`;
+    nextSide = idx === 0 ? 'top' : 'bot';
+  } else if (round === 3) {
+    nextId = 'CUP';
+    nextSide = conf === 'W' ? 'top' : 'bot';
+  } else { return; }
+
+  const nextSlot = bracketState[nextId];
+  if (!nextSlot) return;
+  if (nextSide === 'top') nextSlot.top = team;
+  else nextSlot.bot = team;
+}
+
+function clearDownstream(slotId, side) {
+  if (slotId === 'CUP') return; // nothing downstream of CUP
+  const parts = slotId.split('-');
+  const conf = parts[0];
+  const round = parseInt(parts[1].replace('R',''));
+  const idx = parseInt(parts[2]);
+
+  let nextId, nextSide;
+  if (round === 1) {
+    nextId = `${conf}-R2-${Math.floor(idx/2)}`;
+    nextSide = idx % 2 === 0 ? 'top' : 'bot';
+  } else if (round === 2) {
+    nextId = `${conf}-R3-0`;
+    nextSide = idx === 0 ? 'top' : 'bot';
+  } else if (round === 3) {
+    nextId = 'CUP';
+    nextSide = conf === 'W' ? 'top' : 'bot';
+  } else { return; }
+
+  const nextSlot = bracketState[nextId];
+  if (!nextSlot) return;
+  if (!nextSlot.winner) {
+    if (nextSide === 'top') nextSlot.top = null;
+    else nextSlot.bot = null;
+    if (nextSlot.userPick) {
+      clearDownstream(nextId, nextSlot.userPick);
+      nextSlot.userPick = null;
+    }
+  }
+}
+
+function resetBracket() {
+  bracketTiebreaker = '';
+  // Clear all user picks and re-init
+  if (useProjection) {
+    for (const id in bracketState) {
+      const s = bracketState[id];
+      s.userPick = null;
+      if (id.includes('R2') || id.includes('R3') || id === 'CUP') {
+        s.top = null; s.bot = null;
+      }
+    }
+    // Re-seed R1 teams (they are already in R1 slots)
+  } else {
+    initBracketFromAPI(rawSeriesData);
+    return;
+  }
+  renderBracket();
+}
+
+let bracketTiebreaker = '';
+
+// ── Render ──────────────────────────────────────────────────
+function renderBracket() {
+  const roundNames = {1:'Round 1', 2:'Second Round', 3:'Conf. Final'};
+  const subtitle = useProjection ? 'Projected from current standings · Click a team to pick winners' : '2024–2025 Season · Click a team to pick winners';
+
+  const buildRoundCol = (conf, round, slots) => {
+    const slotDivs = slots.map(([id, slot]) => {
+      return `<div class="bracket-slot">${buildMatchup(id, slot, conf, round)}</div>`;
+    }).join('');
+    return `<div class="bracket-round-col">
+      <div class="round-label">${roundNames[round] || 'Round '+round}</div>
+      <div class="round-slots">${slotDivs}</div>
+    </div>`;
+  };
+
+  const buildConf = (conf) => {
+    const cols = [];
+    for (let r = 1; r <= 3; r++) {
+      const slots = [];
+      const count = r === 1 ? 4 : r === 2 ? 2 : 1;
+      for (let i = 0; i < count; i++) {
+        const id = `${conf}-R${r}-${i}`;
+        slots.push([id, bracketState[id] || emptySlot()]);
+      }
+      cols.push(buildRoundCol(conf, r, slots));
+    }
+    return cols.join('');
+  };
+
+  const cupSlot = bracketState['CUP'] || emptySlot();
+  const champion = cupSlot.winner ? (cupSlot.winner === 'top' ? cupSlot.top : cupSlot.bot)
+                 : (cupSlot.userPick ? (cupSlot.userPick === 'top' ? cupSlot.top : cupSlot.bot) : null);
+
+  // Check if all picks are filled (needed for export)
+  const allPicksFilled = checkAllFilled();
+  const tbFilled = bracketTiebreaker !== '' && /^\d+$/.test(bracketTiebreaker.trim());
+  const canExport = allPicksFilled && tbFilled && champion;
+
+  const tiebreakerHtml = champion ? `
+    <div class="tiebreaker-section">
+      <div class="tiebreaker-label">Total goals in Championship:</div>
+      <input
+        class="tiebreaker-input"
+        type="number"
+        min="0"
+        placeholder="e.g. 24"
+        value="${bracketTiebreaker}"
+        oninput="bracketTiebreaker = this.value.replace(/[^0-9]/g,''); this.value = bracketTiebreaker; checkExportBtn()"
+        onkeydown="if(event.key==='-'||event.key==='.')event.preventDefault()"
+      >
+    </div>` : '';
+
+  const champHtml = champion ? `
+    <div class="champion-display">
+      <div class="champ-label">🏆 Champion</div>
+      ${champion.logo ? `<img src="${champion.logo}" onerror="this.style.display='none'">` : ''}
+      <div class="champ-team">${champion.abbrev}</div>
+    </div>
+    ${tiebreakerHtml}
+    <button id="exportBtn" class="export-btn${canExport ? '' : ' export-disabled'}" onclick="exportBracket()" ${canExport ? '' : 'disabled'}>
+      ⬇ Export Bracket
+    </button>` : '';
+
+  const html = `
+    <div class="bracket-page">
+      <div class="bracket-header">
+        <h1>🏒 Stanley Cup Playoffs</h1>
+        <p>${subtitle}</p>
+        <button class="bracket-reset-btn" onclick="resetBracket()">↺ Reset Picks</button>
+      </div>
+      <div class="conf-label-row">
+        <div class="conf-label-west">Western Conference</div>
+        <div class="conf-label-center"></div>
+        <div class="conf-label-east">Eastern Conference</div>
+      </div>
+      <div class="bracket-outer">
+        <div class="bracket-conference west">${buildConf('W')}</div>
+        <div class="bracket-final-col">
+          <div class="final-label">Stanley Cup<br>Final</div>
+          ${buildMatchup('CUP', cupSlot, 'CUP', 4)}
+          ${champHtml}
+        </div>
+        <div class="bracket-conference east">${buildConf('E')}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('playoffContainer').innerHTML = html;
+}
+
+function checkAllFilled() {
+  const ids = [];
+  ['W','E'].forEach(c => {
+    for (let r = 1; r <= 3; r++) {
+      const count = r === 1 ? 4 : r === 2 ? 2 : 1;
+      for (let i = 0; i < count; i++) ids.push(`${c}-R${r}-${i}`);
+    }
+  });
+  ids.push('CUP');
+  return ids.every(id => {
+    const s = bracketState[id];
+    return s && (s.winner || s.userPick);
+  });
+}
+
+function checkExportBtn() {
+  const allFilled = checkAllFilled();
+  const tbFilled = bracketTiebreaker !== '' && /^\d+$/.test(bracketTiebreaker.trim());
+  const cupSlot = bracketState['CUP'] || emptySlot();
+  const champion = cupSlot.winner || cupSlot.userPick;
+  const btn = document.getElementById('exportBtn');
+  if (!btn) return;
+  const can = allFilled && tbFilled && champion;
+  btn.disabled = !can;
+  btn.classList.toggle('export-disabled', !can);
+}
+
+function exportBracket() {
+  const picks = {};
+  for (const [id, slot] of Object.entries(bracketState)) {
+    const effective = slot.winner || slot.userPick;
+    if (!effective) continue;
+    const winner = effective === 'top' ? slot.top : slot.bot;
+    picks[id] = {
+      winner: winner?.abbrev,
+      source: slot.winner ? 'official' : 'predicted',
+      topWins: slot.topWins,
+      botWins: slot.botWins,
+    };
+  }
+  const cupSlot = bracketState['CUP'] || emptySlot();
+  const champion = (cupSlot.winner || cupSlot.userPick) === 'top' ? cupSlot.top : cupSlot.bot;
+
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    season: '2024-2025',
+    champion: champion?.abbrev,
+    tiebreakerTotalGoals: parseInt(bracketTiebreaker, 10),
+    picks
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nhl-bracket-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildMatchup(id, slot, conf, round) {
+  if (!slot) slot = emptySlot();
+  const { top, bot, topWins, botWins, winner, userPick, live } = slot;
+
+  const maxW = 4;
+  const topDone = winner === 'top';
+  const botDone = winner === 'bot';
+  const effectiveWinner = winner || userPick;
+
+  const teamRow = (side, team, wins) => {
+    if (!team) {
+      return `<div class="b-team tbd"><span class="b-abbrev">TBD</span></div>`;
+    }
+    const isWinner = effectiveWinner === side;
+    const isLoser = effectiveWinner && effectiveWinner !== side;
+    const isUserPick = !winner && userPick === side;
+    const isOfficialWin = winner === side;
+    const canPick = !winner && team; // user can pick if no official winner
+
+    let cls = 'b-team';
+    if (isOfficialWin) cls += ' winner';
+    else if (isLoser && winner) cls += ' loser';
+    else if (isUserPick) cls += ' user-pick';
+    else if (canPick) cls += ' pickable';
+
+    const winsDisplay = wins > 0 ? wins : '';
+    const winsCls = wins === maxW ? 'b-wins champion' : wins > 0 && wins > (side==='top'?botWins:topWins) ? 'b-wins leading' : 'b-wins';
+
+    const logoHtml = team.logo ? `<img class="b-logo" src="${team.logo}" onerror="this.style.display='none'">` : '';
+    const seedHtml = team.seed ? `<span class="b-seed">${team.seed}</span>` : '';
+    const clickAttr = canPick ? `onclick="pickWinner('${id}','${side}')"` : '';
+
+    return `<div class="${cls}" ${clickAttr}>
+      ${seedHtml}${logoHtml}
+      <span class="b-abbrev">${team.abbrev}</span>
+      <span class="${winsCls}">${winsDisplay}</span>
+    </div>`;
+  };
+
+  // Series status bar
+  let barText = '';
+  let barCls = 'b-series-bar';
+  if (winner === 'top') barText = `${top?.abbrev} wins 4-${botWins}`;
+  else if (winner === 'bot') barText = `${bot?.abbrev} wins 4-${topWins}`;
+  else if (live) { barText = `Series ${topWins}-${botWins}`; barCls += ' live-bar'; }
+  else if (userPick) barText = `Predicted: ${effectiveWinner==='top'?top?.abbrev:bot?.abbrev}`;
+  else if (top && bot) barText = 'Click to predict';
+  else barText = 'Awaiting teams';
+
+  const liveCls = live ? ' series-live' : winner ? ' series-done' : '';
+
+  return `<div class="b-matchup${liveCls}">
+    ${teamRow('top', top, topWins)}
+    ${teamRow('bot', bot, botWins)}
+    <div class="${barCls}">${barText}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME DETAIL PANEL
+// ═══════════════════════════════════════════════════════════
+async function selectGame(gameId, gameFromFeed) {
+  // Toggle off if same game clicked again
+  if (selectedGameId === gameId) {
+    closeGameDetail();
+    return;
+  }
+
+  // Update selection state
+  selectedGameId = gameId;
+  document.querySelectorAll('.game-card').forEach(c => c.classList.remove('selected'));
+  const card = document.querySelector(`.game-card[data-game-id="${gameId}"]`);
+  if (card) card.classList.add('selected');
+
+  // Show panel with loading state
+  const panel = document.getElementById('gameDetailPanel');
+  const title = document.getElementById('detailTitle');
+  const body  = document.getElementById('detailBody');
+  const away  = gameFromFeed.awayTeam;
+  const home  = gameFromFeed.homeTeam;
+  title.textContent = `${away.abbrev} @ ${home.abbrev}`;
+  body.innerHTML = '<div class="detail-loading"><div class="spinner"></div><span>Loading game details…</span></div>';
+  panel.classList.add('open');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  try {
+    // Use cache if we recently fetched this game's landing
+    let landing = selectedGameCache[gameId];
+    if (!landing) {
+      landing = await fetchNHL(`/gamecenter/${gameId}/landing`);
+      selectedGameCache[gameId] = landing;
+    }
+    if (selectedGameId !== gameId) return; // user changed selection while fetching
+    renderGameDetail(landing, gameFromFeed);
+  } catch(e) {
+    if (selectedGameId !== gameId) return;
+    body.innerHTML = `<div class="error-msg">⚠️ Could not load game details. ${e.message}</div>`;
+  }
+}
+
+function closeGameDetail() {
+  selectedGameId = null;
+  document.querySelectorAll('.game-card').forEach(c => c.classList.remove('selected'));
+  const panel = document.getElementById('gameDetailPanel');
+  panel.classList.remove('open');
+}
+
+function renderGameDetail(landing, feedGame) {
+  const body  = document.getElementById('detailBody');
+  const state = landing.gameState || feedGame.gameState;
+  const isLive  = state === 'LIVE' || state === 'CRIT';
+  const isFinal = state === 'FINAL' || state === 'OFF';
+  const isPre   = state === 'FUT'   || state === 'PRE';
+
+  const away = landing.awayTeam || feedGame.awayTeam;
+  const home = landing.homeTeam || feedGame.homeTeam;
+  const awayAbbr = away.abbrev;
+  const homeAbbr = home.abbrev;
+  const season = '20252026';
+
+  const headshot = (playerId, teamAbbr) => {
+    if (!playerId) return `<div class="comp-headshot-placeholder"></div>`;
+    const url = `https://assets.nhle.com/mugs/nhl/${season}/${teamAbbr}/${playerId}.png`;
+    return `<img class="comp-headshot" src="${url}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt=""><div class="comp-headshot-placeholder" style="display:none"></div>`;
+  };
+
+  const statBadge = (val, label) =>
+    `<div class="comp-stat"><div class="comp-stat-val">${val ?? '—'}</div><div class="comp-stat-label">${label}</div></div>`;
+
+  let html = '';
+
+  // ── 1. SKATER + GOALIE COMPARISON (pre-game or always) ────────────────
+  const matchup = landing.matchup;
+  if (matchup) {
+    const renderCompSide = (leader, teamAbbr, statKeys) => {
+      if (!leader) return `<div class="comparison-side"><div style="color:var(--text-dim);font-size:0.8rem;padding:16px">No data</div></div>`;
+      const name = leader.name?.default || '?';
+      const pos  = leader.position || '';
+      return `<div class="comparison-side">
+        <div class="comp-player-head">
+          ${headshot(leader.playerId, teamAbbr)}
+          <div>
+            <div class="comp-player-name">${name}</div>
+            <div class="comp-player-pos">${[teamAbbr, pos].filter(Boolean).join(' · ')}</div>
+          </div>
+        </div>
+        <div class="comp-stats">
+          ${statKeys.map(([k,l]) => statBadge(leader[k], l)).join('')}
+        </div>
+      </div>`;
+    };
+
+    const skaterStats = [['points','PTS'],['goals','G'],['assists','A']];
+    const goalieStats = [['gaa','GAA'],['savePctg','SV%']];
+
+    const sk = matchup.skaterComparison;
+    const gk = matchup.goalieComparison;
+
+    if (sk) {
+      html += `<div class="detail-section-label">⛸ Skater Matchup</div>
+        <div class="detail-team-labels">
+          <span>${awayAbbr}</span><span>${homeAbbr}</span>
+        </div>
+        <div class="comparison-grid">
+          ${renderCompSide(sk.awayLeader, awayAbbr, skaterStats)}
+          ${renderCompSide(sk.homeLeader, homeAbbr, skaterStats)}
+        </div>`;
+    }
+    if (gk) {
+      html += `<div class="detail-section-label">🥅 Goalie Matchup</div>
+        <div class="detail-team-labels">
+          <span>${awayAbbr}</span><span>${homeAbbr}</span>
+        </div>
+        <div class="comparison-grid">
+          ${renderCompSide(gk.awayLeader, awayAbbr, goalieStats)}
+          ${renderCompSide(gk.homeLeader, homeAbbr, goalieStats)}
+        </div>`;
+    }
+  }
+
+  // ── 2. BOX SCORE — scoring by period ──────────────────────────────────
+  const linescore = landing.summary?.linescore;
+  if (linescore?.byPeriod?.length) {
+    const periods = linescore.byPeriod;
+    const totAway = linescore.totals?.away ?? '';
+    const totHome = linescore.totals?.home ?? '';
+
+    const perHeaders = periods.map(p => {
+      const n = p.periodDescriptor?.number;
+      const t = p.periodDescriptor?.periodType;
+      return `<th>${t === 'OT' ? 'OT' : t === 'SO' ? 'SO' : n}</th>`;
+    }).join('');
+    const awayPer = periods.map(p => `<td>${p.away ?? '—'}</td>`).join('');
+    const homePer = periods.map(p => `<td>${p.home ?? '—'}</td>`).join('');
+
+    html += `<div class="detail-section-label">📋 Linescore</div>
+      <div class="detail-linescore-wrap">
+        <table class="detail-linescore">
+          <thead><tr><th>Team</th>${perHeaders}<th class="ls-tot">T</th></tr></thead>
+          <tbody>
+            <tr><td class="ls-team">${awayAbbr}</td>${awayPer}<td class="ls-tot">${totAway}</td></tr>
+            <tr><td class="ls-team">${homeAbbr}</td>${homePer}<td class="ls-tot">${totHome}</td></tr>
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // ── 3. SCORING SUMMARY ────────────────────────────────────────────────
+  const scoringPlays = landing.summary?.scoring;
+  if (scoringPlays?.length) {
+    const periodGroups = {};
+    for (const period of scoringPlays) {
+      const pd = period.periodDescriptor;
+      const n  = pd?.number;
+      const t  = pd?.periodType;
+      const label = t === 'OT' ? 'Overtime' : t === 'SO' ? 'Shootout' : `Period ${n}`;
+      const goals = period.goals || [];
+      if (!goals.length) continue;
+
+      const rows = goals.map(gl => {
+        const scorer    = gl.name?.default || '?';
+        const teamA     = gl.teamAbbrev?.default || '';
+        const time      = gl.timeInPeriod || '';
+        const strength  = gl.strength && gl.strength !== 'ev' ? `<span class="s-strength" style="font-size:0.58rem">${gl.strength.toUpperCase()}</span>` : '';
+        const assists   = (gl.assists || []).map(a => a.name?.default?.split(' ').slice(-1)[0]).join(', ');
+        const awayG     = gl.awayScore ?? '';
+        const homeG     = gl.homeScore ?? '';
+        const score     = awayG !== '' ? `${awayAbbr} ${awayG}–${homeAbbr} ${homeG}` : '';
+        const hlUrl     = gl.highlightClipSharingUrl || '';
+        const hlBtn     = hlUrl ? `<button class="highlight-btn" onclick="openVideoModal(event,'${hlUrl.replace(/'/g,"\\'")}','${scorer.replace(/'/g,"\\'")}')">▶</button>` : '';
+        return `<tr>
+          <td class="sg-time">${time}</td>
+          <td><span style="color:var(--accent);font-weight:700">${teamA}</span> ${strength}</td>
+          <td class="sg-scorer">${scorer}${assists ? `<div class="sg-assists">${assists}</div>` : ''}</td>
+          <td class="sg-score">${score}</td>
+          <td>${hlBtn}</td>
+        </tr>`;
+      }).join('');
+
+      periodGroups[label] = rows;
+    }
+
+    if (Object.keys(periodGroups).length) {
+      html += `<div class="detail-section-label">🚨 Scoring Summary</div>`;
+      for (const [label, rows] of Object.entries(periodGroups)) {
+        html += `<div class="sg-period-label">${label}</div>
+          <table class="detail-scoring-table"><tbody>${rows}</tbody></table>`;
+      }
+    }
+  }
+
+  // ── 4. PENALTY SUMMARY ────────────────────────────────────────────────
+  const penaltyPlays = landing.summary?.penalties;
+  if (penaltyPlays?.length) {
+    const penRows = [];
+    for (const period of penaltyPlays) {
+      const pd    = period.periodDescriptor;
+      const n     = pd?.number;
+      const t     = pd?.periodType;
+      const pLabel = t === 'OT' ? 'OT' : t === 'SO' ? 'SO' : `P${n}`;
+      for (const pen of (period.penalties || [])) {
+        const player  = pen.committedByPlayer || '—';
+        const teamA   = pen.teamAbbrev?.default || '';
+        const type    = pen.descKey || pen.type || '—';
+        const mins    = pen.duration != null ? `${pen.duration} min` : '';
+        const time    = pen.timeInPeriod || '';
+        penRows.push(`<tr>
+          <td class="sg-time">${pLabel} ${time}</td>
+          <td><span style="color:var(--accent);font-weight:700">${teamA}</span></td>
+          <td class="sg-scorer">${player}</td>
+          <td style="color:var(--text-dim);font-size:0.75rem">${type}</td>
+          <td style="font-family:'Roboto Mono',monospace;font-size:0.75rem">${mins}</td>
+        </tr>`);
+      }
+    }
+    if (penRows.length) {
+      html += `<div class="detail-section-label">🚩 Penalties</div>
+        <table class="detail-scoring-table"><tbody>${penRows.join('')}</tbody></table>`;
+    }
+  }
+
+  // ── 5. TEAM STATS (shots, faceoffs, hits, etc.) ───────────────────────
+  const teamStats = landing.summary?.teamGameStats;
+  if (teamStats?.length) {
+    const statRows = teamStats.map(s => {
+      const label = s.category || s.categoryLabel || s.type || '?';
+      const awVal = s.awayValue ?? '—';
+      const hmVal = s.homeValue ?? '—';
+      // Highlight whichever side is higher (for numeric stats)
+      const awNum = parseFloat(awVal);
+      const hmNum = parseFloat(hmVal);
+      const awBold = (!isNaN(awNum) && !isNaN(hmNum) && awNum > hmNum) ? 'style="color:var(--text);font-weight:700"' : '';
+      const hmBold = (!isNaN(awNum) && !isNaN(hmNum) && hmNum > awNum) ? 'style="color:var(--text);font-weight:700"' : '';
+      return `<tr>
+        <td ${awBold}>${awVal}</td>
+        <td class="ts-label">${label}</td>
+        <td ${hmBold}>${hmVal}</td>
+      </tr>`;
+    }).join('');
+
+    html += `<div class="detail-section-label">📊 Team Stats</div>
+      <div class="detail-team-labels"><span>${awayAbbr}</span><span>${homeAbbr}</span></div>
+      <table class="detail-team-stats"><tbody>${statRows}</tbody></table>`;
+  }
+
+  // ── 6. GOALIE STATS ───────────────────────────────────────────────────
+  const gameInfo = landing.summary?.gameInfo;
+  const renderGoalieRow = (gl, teamAbbr) => {
+    if (!gl) return '';
+    const name   = gl.name?.default || '?';
+    const pid    = gl.playerId;
+    const toi    = gl.toi || '';
+    const sa     = gl.shotsAgainst ?? '—';
+    const ga     = gl.goalsAgainst ?? '—';
+    const sv     = gl.saves ?? '—';
+    const svp    = gl.savePctg != null ? gl.savePctg.toFixed(3) : '—';
+    const starter = gl.starter ? `<span style="font-size:0.6rem;color:var(--gold);background:rgba(255,209,102,0.12);border:1px solid rgba(255,209,102,0.3);border-radius:3px;padding:1px 4px;margin-left:4px">START</span>` : '';
+    const img    = pid ? `<img class="scorer-headshot" style="width:28px;height:28px;flex-shrink:0" src="https://assets.nhle.com/mugs/nhl/${season}/${teamAbbr}/${pid}.png" onerror="this.style.display='none'" alt="">` : '';
+    return `<tr>
+      <td style="display:flex;align-items:center;gap:6px">${img}<span>${name}${starter}</span></td>
+      <td style="color:var(--accent);font-weight:700">${teamAbbr}</td>
+      <td>${toi}</td>
+      <td>${sa}</td>
+      <td>${sv}</td>
+      <td>${ga}</td>
+      <td style="color:var(--gold)">${svp}</td>
+    </tr>`;
+  };
+
+  const awayGoalies = gameInfo?.awayTeam?.goalies || landing.summary?.iceSurface?.awayTeam?.goalies || [];
+  const homeGoalies = gameInfo?.homeTeam?.goalies || landing.summary?.iceSurface?.homeTeam?.goalies || [];
+  const allGoalieRows = [
+    ...awayGoalies.map(gl => renderGoalieRow(gl, awayAbbr)),
+    ...homeGoalies.map(gl => renderGoalieRow(gl, homeAbbr))
+  ].filter(Boolean);
+
+  if (allGoalieRows.length) {
+    html += `<div class="detail-section-label">🥅 Goalies</div>
+      <table class="detail-goalie-table">
+        <thead><tr><th>Goalie</th><th>Team</th><th>TOI</th><th>SA</th><th>SV</th><th>GA</th><th>SV%</th></tr></thead>
+        <tbody>${allGoalieRows.join('')}</tbody>
+      </table>`;
+  }
+
+  // ── 7. THREE STARS ────────────────────────────────────────────────────
+  const stars = landing.summary?.gameInfo?.threeStars;
+  if (stars?.length) {
+    const starCards = stars.map((s, i) => {
+      const pid   = s.playerId;
+      const name  = s.name?.default || '?';
+      const teamA = s.teamAbbrev || '';
+      const pos   = s.position || '';
+      return `<div class="star-card">
+        <div class="star-rank">${['⭐','⭐⭐','⭐⭐⭐'][i] || ''}</div>
+        ${headshot(pid, teamA)}
+        <div class="star-name">${name}</div>
+        <div class="star-meta">${[teamA, pos].filter(Boolean).join(' · ')}</div>
+      </div>`;
+    }).join('');
+    html += `<div class="detail-section-label">⭐ Three Stars</div>
+      <div class="three-stars-row">${starCards}</div>`;
+  }
+
+  if (!html) {
+    html = `<div class="detail-loading" style="color:var(--text-dim)">No additional detail available for this game.</div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIDEO MODAL
+// ═══════════════════════════════════════════════════════════
+function openVideoModal(event, url, title) {
+  event.stopPropagation();
+  const modal = document.getElementById('videoModal');
+  const body = document.getElementById('videoModalBody');
+  const titleEl = document.getElementById('videoModalTitle');
+  titleEl.textContent = title || 'Goal Highlight';
+
+  // Determine embed strategy
+  // NHL highlight links are typically direct MP4 or nhl.com share pages
+  let embedHtml = '';
+
+  // Try to detect if it's an mp4/video file
+  if (/\.(mp4|webm|ogg|mov)/i.test(url)) {
+    embedHtml = `<video controls autoplay playsinline>
+      <source src="${url}" type="video/mp4">
+      Your browser does not support video playback.
+    </video>`;
+  } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const vid = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+    if (vid) embedHtml = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  } else if (url.includes('nhl.com') || url.includes('nhle.com')) {
+    // Try iframe embed for NHL pages
+    embedHtml = `<iframe src="${url}" allow="autoplay; fullscreen" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
+  }
+
+  // Fallback for any unrecognized URL
+  if (!embedHtml) {
+    embedHtml = `<div class="video-modal-fallback">
+      <div>🎥 Preview not available in-page.</div>
+      <div><a href="${url}" target="_blank" rel="noopener">Open on NHL.com ↗</a></div>
+    </div>`;
+  }
+
+  body.innerHTML = embedHtml;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideoModal(event) {
+  // Only close if clicking the backdrop (not the inner modal)
+  if (event.target === document.getElementById('videoModal')) {
+    closeVideoModalDirect();
+  }
+}
+
+function closeVideoModalDirect() {
+  const modal = document.getElementById('videoModal');
+  modal.classList.remove('open');
+  document.getElementById('videoModalBody').innerHTML = ''; // stop playback
+  document.body.style.overflow = '';
+}
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeVideoModalDirect();
+});
+
+// ═══════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════
+loadGames();
+</script>
+</body>
+</html>

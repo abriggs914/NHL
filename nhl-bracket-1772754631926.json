@@ -1,0 +1,98 @@
+{
+  "exportedAt": "2026-03-05T23:50:31.925Z",
+  "season": "2024-2025",
+  "champion": "VGK",
+  "tiebreakerTotalGoals": 33,
+  "picks": {
+    "W-R1-0": {
+      "winner": "COL",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "W-R1-1": {
+      "winner": "VGK",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "W-R1-2": {
+      "winner": "MIN",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "W-R1-3": {
+      "winner": "UTA",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "W-R2-0": {
+      "winner": "VGK",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "W-R2-1": {
+      "winner": "UTA",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "W-R3-0": {
+      "winner": "VGK",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R1-0": {
+      "winner": "BOS",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R1-1": {
+      "winner": "TBL",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R1-2": {
+      "winner": "PIT",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R1-3": {
+      "winner": "BUF",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R2-0": {
+      "winner": "BOS",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R2-1": {
+      "winner": "BUF",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "E-R3-0": {
+      "winner": "BOS",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    },
+    "CUP": {
+      "winner": "VGK",
+      "source": "predicted",
+      "topWins": 0,
+      "botWins": 0
+    }
+  }
+}
