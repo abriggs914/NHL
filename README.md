@@ -408,7 +408,7 @@ https://assets.nhle.com/mugs/nhl/{season}/{teamAbbr}/{playerId}.png
 
 **Example:**
 ```
-https://assets.nhle.com/mugs/nhl/20242025/TOR/8478402.png
+https://assets.nhle.com/mugs/nhl/20242025/TOR/8479318.png
 ```
 
 ```python

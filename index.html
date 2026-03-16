@@ -1258,12 +1258,12 @@
     border-radius: 3px;
     padding: 1px 4px;
     font-family: 'Roboto Mono', monospace;
-    min-width: 18px;
+    min-width: 30px;
     text-align: center;
     flex-shrink: 0;
   }
   .b-logo {
-    width: 18px; height: 18px;
+    width: 30px; height: 30px;
     object-fit: contain;
     flex-shrink: 0;
   }
@@ -1472,6 +1472,481 @@
     text-align: center;
     margin: 20px 0;
   }
+  /* ══════════════════════════════════════════════
+     GANTT TIMELINE
+  ══════════════════════════════════════════════ */
+  #ganttWrap {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .gantt-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #0d2444 0%, #112240 100%);
+    border-bottom: 1px solid var(--card-border);
+    flex-wrap: wrap;
+  }
+  .gantt-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .gantt-legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  .gantt-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.3px;
+  }
+  .gantt-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .gantt-toggle {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+    border-radius: 5px;
+    width: 26px; height: 26px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .gantt-toggle:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .gantt-toggle.collapsed { transform: rotate(180deg); }
+
+  .gantt-body {
+    padding: 12px 16px 10px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    max-height: 600px;
+  }
+  .gantt-body.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .gantt-canvas-wrap {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    cursor: default;
+  }
+  #ganttCanvas {
+    display: block;
+    border-radius: 6px;
+  }
+
+  /* "Now" vertical line */
+  #ganttNowLine {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(0,255,136,0.7);
+    pointer-events: none;
+    display: none;
+    box-shadow: 0 0 6px rgba(0,255,136,0.5);
+  }
+
+  /* Hover tooltip */
+  #ganttTooltip {
+    position: fixed;
+    background: #0d2444;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: var(--text);
+    pointer-events: none;
+    display: none;
+    z-index: 500;
+    min-width: 160px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    line-height: 1.6;
+  }
+
+  /* ══════════════════════════════════════════════
+     DATE PICKER
+  ══════════════════════════════════════════════ */
+  .date-display-wrap {
+    position: relative;
+  }
+  .date-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    min-width: 240px;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  .date-display:hover { color: var(--accent); }
+  .date-display::after {
+    content: ' 📅';
+    font-size: 0.85rem;
+    opacity: 0.45;
+    vertical-align: middle;
+  }
+
+  .date-picker-popup {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0d2444;
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    padding: 14px;
+    z-index: 300;
+    width: 260px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    animation: dpFadeIn 0.15s ease;
+  }
+  @keyframes dpFadeIn {
+    from { opacity:0; transform: translateX(-50%) translateY(-6px); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0); }
+  }
+
+  .dp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .dp-nav {
+    background: var(--rink-light);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    border-radius: 6px;
+    width: 28px; height: 28px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dp-nav:hover { background: var(--accent); border-color: var(--accent); color: var(--rink); }
+  .dp-month-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1.5px;
+    color: var(--text);
+  }
+
+  .dp-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .dp-weekdays span {
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    padding: 2px 0;
+    letter-spacing: 0.5px;
+  }
+
+  .dp-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .dp-day {
+    text-align: center;
+    padding: 5px 2px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: background 0.12s, color 0.12s;
+    line-height: 1.2;
+  }
+  .dp-day:hover { background: rgba(0,180,216,0.18); color: var(--text); }
+  .dp-day.dp-today { color: var(--accent); font-weight: 700; }
+  .dp-day.dp-selected {
+    background: var(--accent);
+    color: var(--rink);
+    font-weight: 700;
+  }
+  .dp-day.dp-today.dp-selected { background: var(--accent); }
+  .dp-day.dp-empty { cursor: default; pointer-events: none; }
+  .dp-day.dp-other-month { opacity: 0.3; }
+
+  .dp-footer {
+    margin-top: 10px;
+    text-align: center;
+  }
+  .dp-today-btn {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(0,180,216,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(0,180,216,0.35);
+    border-radius: 6px;
+    padding: 5px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dp-today-btn:hover { background: rgba(0,180,216,0.3); }
+
+  /* ══════════════════════════════════════════════
+     STATS TAB
+  ══════════════════════════════════════════════ */
+  .stats-filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+  }
+  .stats-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .stats-filter-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .stats-scope-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .scope-pill {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .scope-pill:hover { border-color: var(--accent); color: var(--text); }
+  .scope-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--rink);
+  }
+
+  .stats-scope-select {
+    background: var(--rink-mid);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    min-width: 160px;
+  }
+  .stats-scope-select:focus { border-color: var(--accent); }
+
+  /* Two-column panel grid */
+  .stats-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .stats-panels { grid-template-columns: 1fr; }
+  }
+
+  .stats-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .stats-panel-header {
+    background: linear-gradient(135deg, #0d2444 0%, #112240 100%);
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .stats-panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .stats-cat-pills {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .cat-pill {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .cat-pill:hover { border-color: var(--accent); color: var(--text); }
+  .cat-pill.active {
+    background: rgba(0,180,216,0.18);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Leader rows */
+  .leaders-list {
+    padding: 6px 0;
+  }
+  .leader-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.12s;
+    cursor: default;
+  }
+  .leader-row:last-child { border-bottom: none; }
+  .leader-row:hover { background: rgba(255,255,255,0.03); }
+
+  .leader-rank {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .leader-rank.rank-1 { color: var(--gold); }
+  .leader-rank.rank-2 { color: #c0c0c0; }
+  .leader-rank.rank-3 { color: #cd7f32; }
+
+  .leader-headshot {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--card-border);
+    background: var(--rink-light);
+    flex-shrink: 0;
+  }
+  .leader-headshot-placeholder {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--rink-light);
+    border: 2px solid var(--card-border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+
+  .leader-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .leader-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .leader-meta {
+    font-size: 0.67rem;
+    color: var(--text-dim);
+    margin-top: 1px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .leader-team-logo {
+    width: 18px; height: 18px;
+    object-fit: contain;
+    vertical-align: middle;
+  }
+
+  .leader-stat-primary {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+    min-width: 42px;
+    text-align: right;
+  }
+  .leader-stat-secondary {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    text-align: right;
+    flex-shrink: 0;
+    line-height: 1.4;
+    min-width: 50px;
+  }
+
+  /* Bar fill behind the row */
+  .leader-row-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    position: relative;
+    min-width: 0;
+  }
+  .leader-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: rgba(255,209,102,0.06);
+    border-radius: 4px;
+    pointer-events: none;
+    transition: width 0.4s ease;
+  }
+
 </style>
 </head>
 <body>
@@ -1500,6 +1975,7 @@
 <nav>
   <div class="nav-tab active" onclick="switchTab('scores')">Scores</div>
   <div class="nav-tab" onclick="switchTab('standings')">Standings</div>
+  <div class="nav-tab" onclick="switchTab('stats')">Stats</div>
   <div class="nav-tab" onclick="switchTab('playoff')">Playoff Bracket</div>
 </nav>
 
@@ -1509,13 +1985,45 @@
   <div class="tab-content active" id="tab-scores">
     <div class="date-nav">
       <button class="date-btn" onclick="changeDate(-1)">◀</button>
-      <div class="date-display" id="dateDisplay">—</div>
+      <div class="date-display-wrap">
+        <div class="date-display" id="dateDisplay" onclick="toggleDatePicker()" title="Pick a date">—</div>
+        <div id="datePicker" class="date-picker-popup" style="display:none">
+          <div class="dp-header">
+            <button class="dp-nav" onclick="dpShiftMonth(-1)">◀</button>
+            <span class="dp-month-label" id="dpMonthLabel"></span>
+            <button class="dp-nav" onclick="dpShiftMonth(1)">▶</button>
+          </div>
+          <div class="dp-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+          <div class="dp-grid" id="dpGrid"></div>
+          <div class="dp-footer">
+            <button class="dp-today-btn" onclick="dpGoToday()">Today</button>
+          </div>
+        </div>
+      </div>
       <button class="date-btn" onclick="changeDate(1)">▶</button>
       <button class="today-btn" onclick="goToToday()">Today</button>
     </div>
     <div class="refresh-info">
       <span class="refresh-dot"></span>
       <span id="refreshLabel">Auto-refreshing every 30s</span>
+    </div>
+
+    <!-- ── Gantt Timeline ── -->
+    <div id="ganttWrap">
+      <div class="gantt-header">
+        <span class="gantt-title">🕐 Game Timeline</span>
+        <div class="gantt-legend" id="ganttLegend"></div>
+        <button class="gantt-toggle" onclick="toggleGantt(this)" title="Collapse timeline">▲</button>
+      </div>
+      <div class="gantt-body" id="ganttBody">
+        <div class="gantt-canvas-wrap">
+          <canvas id="ganttCanvas"></canvas>
+          <div id="ganttNowLine"></div>
+          <div id="ganttTooltip"></div>
+        </div>
+      </div>
     </div>
     <div id="gamesContainer">
       <div class="loading-state"><div class="spinner"></div><span>Loading games…</span></div>
@@ -1544,6 +2052,75 @@
     </div>
   </div>
 
+  <!-- ═══ STATS TAB ═══ -->
+  <div class="tab-content" id="tab-stats">
+
+    <!-- Filter bar -->
+    <div class="stats-filter-bar">
+      <div class="stats-filter-group">
+        <label class="stats-filter-label">Filter by</label>
+        <div class="stats-scope-pills" id="statsScopePills">
+          <button class="scope-pill active" onclick="setStatsScope('league', this)">League</button>
+          <button class="scope-pill" onclick="setStatsScope('conference', this)">Conference</button>
+          <button class="scope-pill" onclick="setStatsScope('division', this)">Division</button>
+          <button class="scope-pill" onclick="setStatsScope('team', this)">Team</button>
+        </div>
+      </div>
+      <div class="stats-filter-group" id="statsScopeValueWrap" style="display:none">
+        <label class="stats-filter-label" id="statsScopeValueLabel">Select</label>
+        <select class="stats-scope-select" id="statsScopeValue" onchange="onScopeValueChange()"></select>
+      </div>
+    </div>
+
+    <!-- Two-panel layout: Skaters | Goalies -->
+    <div class="stats-panels">
+
+      <!-- SKATERS -->
+      <div class="stats-panel">
+        <div class="stats-panel-header">
+          <span class="stats-panel-title">⛸ Skaters</span>
+          <div class="stats-cat-pills" id="skaterCatPills">
+            <button class="cat-pill active" onclick="setSkaterCat('points',this)">PTS</button>
+            <button class="cat-pill" onclick="setSkaterCat('goals',this)">G</button>
+            <button class="cat-pill" onclick="setSkaterCat('assists',this)">A</button>
+            <button class="cat-pill" onclick="setSkaterCat('plusMinus',this)">+/−</button>
+            <button class="cat-pill" onclick="setSkaterCat('pim',this)">PIM</button>
+            <button class="cat-pill" onclick="setSkaterCat('shots',this)">SOG</button>
+            <button class="cat-pill" onclick="setSkaterCat('shootingPctg',this)">S%</button>
+            <button class="cat-pill" onclick="setSkaterCat('timeOnIcePerGame',this)">TOI</button>
+            <button class="cat-pill" onclick="setSkaterCat('faceoffWinningPctg',this)">FO%</button>
+            <button class="cat-pill" onclick="setSkaterCat('powerPlayGoals',this)">PPG</button>
+            <button class="cat-pill" onclick="setSkaterCat('shorthandedGoals',this)">SHG</button>
+          </div>
+        </div>
+        <div id="skaterLeadersList">
+          <div class="loading-state"><div class="spinner"></div><span>Loading…</span></div>
+        </div>
+      </div>
+
+      <!-- GOALIES -->
+      <div class="stats-panel">
+        <div class="stats-panel-header">
+          <span class="stats-panel-title">🥅 Goalies</span>
+          <div class="stats-cat-pills" id="goalieCatPills">
+            <button class="cat-pill active" onclick="setGoalieCat('savePctg',this)">SV%</button>
+            <button class="cat-pill" onclick="setGoalieCat('wins',this)">W</button>
+            <button class="cat-pill" onclick="setGoalieCat('goalsAgainst',this)">GA</button>
+            <button class="cat-pill" onclick="setGoalieCat('goalsAgainstAvg',this)">GAA</button>
+            <button class="cat-pill" onclick="setGoalieCat('shutouts',this)">SO</button>
+            <button class="cat-pill" onclick="setGoalieCat('saves',this)">SV</button>
+            <button class="cat-pill" onclick="setGoalieCat('shotsAgainst',this)">SA</button>
+            <button class="cat-pill" onclick="setGoalieCat('gamesStarted',this)">GS</button>
+          </div>
+        </div>
+        <div id="goalieLeadersList">
+          <div class="loading-state"><div class="spinner"></div><span>Loading…</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ═══ PLAYOFF TAB ═══ -->
   <div class="tab-content" id="tab-playoff">
     <div id="playoffContainer">
@@ -1562,10 +2139,11 @@ let spoilerMode = false;
 let refreshTimer = null;
 let standingsLoaded = false;
 let playoffLoaded = false;
+let statsLoaded = false;
 let selectedGameId = null;
 let selectedGameCache = {}; // gameId → landing data cache
 
-const PROXY = 'https://corsproxy.io/?';
+const PROXY = 'https://corsproxy.io/?url=';
 const API = 'https://api-web.nhle.com/v1';
 
 // ═══════════════════════════════════════════════════════════
@@ -1588,22 +2166,44 @@ function displayDate(d) {
 }
 
 async function fetchNHL(path) {
-  // Append a cache-busting timestamp so the browser never serves a stale cached response
-  const bust = `_cb=${Date.now()}`;
-  const separator = path.includes('?') ? '&' : '?';
+  //const bust = `_cb=${Date.now()}`;
+  //const separator = path.includes('?') ? '&' : '?';
+  const bust = '';
+  const separator = '';
   const bustPath = path + separator + bust;
-  const url = PROXY + encodeURIComponent(API + bustPath);
+  const target = API + bustPath;
+  const url = PROXY + encodeURIComponent(target);
+
+  // https://api-web.nhle.com/v1f
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fskater-stats-leaders%2Fcurrent%3Fcategories%3Dgoals%2Cassists%2Cpoints%26limit%3D50%26_cb%3D1773609677343
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fskater-stats-leaders%2Fcurrent%3Fcategories%3Dgoals%2Cassists%2Cpoints%26limit%3D50%26_cb%3D1773609769310
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fskater-stats-leaders%2Fcurrent%3Fcategories%3Dgoals%2Cassists%2Cpoints%26limit%3D10
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fskater-stats-leaders%2Fcurrent%3Fcategories%3Dgoals%2Cassists%2Cpoints%26limit%3D50%26
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fskater-stats-leaders%2Fcurrent%3Fcategories%3Dgoals%2Cassists%2Cpoints%26limit%3D50
+
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fgoalie-stats-leaders%2Fcurrent%3Fcategories%3Dwins%2Cgaa%2CsavePct%2Cshutouts%26limit%3D50
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fgoalie-stats-leaders%2Fcurrent%3Fcategories%3Dwins%2Cgaa%2CsavePct%2Cshutouts%26limit%3D50
+  // https://corsproxy.io/?url=https%3A%2F%2Fapi-web.nhle.com%2Fv1%2Fgoalie-stats-leaders%2Fcurrent%3Fcategories%3Dwins%26limit%3D50
+  
+  // https://api-web.nhle.com/v1/skater-stats-leaders/current?categories=goals,assists,points&limit=10
+
   console.log('[fetchNHL] GET', url);
-  const r = await fetch(url, {
-    cache: 'no-store',   // never read from or write to the HTTP cache
-    headers: {
-      'x-requested-with': 'XMLHttpRequest',
-    }
-  });
-  if (!r.ok) throw new Error('API error ' + r.status);
-  const data = await r.json();  // MUST be awaited — r.json() returns a Promise
-  console.log('[fetchNHL] response received for', path, '— games:', data?.games?.length ?? 'n/a');
-  return data;
+  //alert('[fetchNHL] GET [' + url + ']')
+
+  const r = await fetch(url, { cache: 'no-store' });
+
+  if (!r.ok) {
+    const text = await r.text().catch(() => '');
+    throw new Error(`API error ${r.status}: ${text}`);
+  }
+
+  const text = await r.text();
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error('Non-JSON response:', text);
+    throw err;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1638,6 +2238,9 @@ function switchTab(tab) {
   event.target.classList.add('active');
   if (tab === 'standings' && !standingsLoaded) loadStandings();
   if (tab === 'playoff' && !playoffLoaded) loadPlayoff();
+  if (tab === 'stats' && !statsLoaded) initStats();
+  // Close date picker if open
+  closeDatePicker();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1720,6 +2323,48 @@ async function loadGames() {
       }
     }
 
+    games.sort((a, b) => {
+      // 1️⃣ Live games first
+      const aLive = (a.gameState === 'LIVE' || a.gameState === 'CRIT') ? 1 : 0;
+      const bLive = (b.gameState === 'LIVE' || b.gameState === 'CRIT') ? 1 : 0;
+      if (aLive !== bLive) {
+        // console.log("A", a.id, b.id, aLive, bLive);
+        return bLive - aLive;
+      }
+
+      // 2️⃣ Least time remaining
+      const aPer = a.periodDescriptor?.number ?? 9999;
+      const bPer = b.periodDescriptor?.number ?? 9999;
+      if (aPer !== bPer) {
+        // console.log("B", a.id, b.id, aPer, bPer);
+        return bPer - aPer;
+      }
+
+      // 2️⃣ Least time remaining
+      const tpPer = 60 * 20;
+      const slices = 10;  // 120 second buckets
+      const p = tpPer / slices;
+      const aTime = Math.round((a.clock?.secondsRemaining ?? 9999) / p, 0);
+      const bTime = Math.round((b.clock?.secondsRemaining ?? 9999) / p, 0);
+      if (aTime !== bTime) {
+        // console.log("C", a.id, b.id, aTime, bTime);
+        return aTime - bTime;
+      }
+
+      // 4️⃣ Most total goals
+      const aGoals = (a.awayTeam?.score ?? 0) + (a.homeTeam?.score ?? 0);
+      const bGoals = (b.awayTeam?.score ?? 0) + (b.homeTeam?.score ?? 0);
+      if (aGoals !== bGoals) {
+        // console.log("D", a.id, b.id, aGoals, bGoals);
+        return bGoals - aGoals;
+      }
+
+      // 3️⃣ Lowest goal differential
+      const aDiff = Math.abs((a.awayTeam?.score ?? 0) - (a.homeTeam?.score ?? 0));
+      const bDiff = Math.abs((b.awayTeam?.score ?? 0) - (b.homeTeam?.score ?? 0));
+      // console.log("E", a.id, b.id, aDiff, bDiff);
+      return aDiff - bDiff;
+    });
     renderGames(games, !hasSnapshot);
   } catch(e) {
     document.getElementById('gamesContainer').innerHTML =
@@ -1792,6 +2437,9 @@ function renderGames(games, isFirstLoad) {
   container.innerHTML = '';
   container.appendChild(grid);
 
+  // Update Gantt timeline with latest game data
+  updateGantt(games);
+
   // If selected game is live, invalidate its landing cache so next open gets fresh data
   if (selectedGameId) {
     const selGame = games.find(g => g.id === selectedGameId);
@@ -1849,8 +2497,10 @@ function buildCard(g, events) {
     const awayGoalies = iceSurface.awayTeam?.goalies || [];
     const homeGoalies = iceSurface.homeTeam?.goalies || [];
     // Net is empty if no goalie is currently on ice (inNet === true)
-    enAway = awayGoalies.length > 0 && !awayGoalies.some(gl => gl.inNet === true);
-    enHome = homeGoalies.length > 0 && !homeGoalies.some(gl => gl.inNet === true);
+    //enAway = awayGoalies.length > 0 && !awayGoalies.some(gl => gl.inNet === true);
+    //enHome = homeGoalies.length > 0 && !homeGoalies.some(gl => gl.inNet === true);
+    enAway = awayGoalies.length === 0;
+    enHome = homeGoalies.length === 0;
   } else {
     // Fallback to situation flags from score feed
     enAway = !!(g.situation?.awayTeam?.emptyNet);
@@ -2099,8 +2749,8 @@ function buildCard(g, events) {
     ? `<img class="team-logo" src="${homeLogoUrl}" alt="${home.abbrev}" onerror="this.style.display='none'">`
     : `<div class="team-logo-placeholder">${home.abbrev}</div>`;
 
-  const awayRecordStr = away.record ? `<div class="team-record">${away.record}</div>` : '';
-  const homeRecordStr = home.record ? `<div class="team-record">${home.record}</div>` : '';
+  const awayRecordStr = away.record ? `<div class="team-record">${away.record}</div>` : `<div class="team-record">SOG: ${away.sog}</div>`;
+  const homeRecordStr = home.record ? `<div class="team-record">${home.record}</div>` : `<div class="team-record">SOG: ${home.sog}</div>`;
 
   const venue = g.venue?.default || '';
 
@@ -2903,11 +3553,20 @@ function buildMatchup(id, slot, conf, round) {
     const seedHtml = team.seed ? `<span class="b-seed">${team.seed}</span>` : '';
     const clickAttr = canPick ? `onclick="pickWinner('${id}','${side}')"` : '';
 
-    return `<div class="${cls}" ${clickAttr}>
-      ${seedHtml}${logoHtml}
-      <span class="b-abbrev">${team.abbrev}</span>
-      <span class="${winsCls}">${winsDisplay}</span>
-    </div>`;
+    if (conf === "W") {
+      return `<div class="${cls}" ${clickAttr}>
+        ${seedHtml}${logoHtml}
+        <span class="b-abbrev">${team.abbrev}</span>
+        <span class="${winsCls}">${winsDisplay}</span>
+      </div>`;
+    }
+    else {
+      return `<div class="${cls}" ${clickAttr}>
+        <span class="b-abbrev">${team.abbrev}</span>
+        ${logoHtml}${seedHtml}
+        <span class="${winsCls}">${winsDisplay}</span>
+      </div>`;
+    }
   };
 
   // Series status bar
@@ -3132,16 +3791,18 @@ function renderGameDetail(landing, feedGame) {
       const t     = pd?.periodType;
       const pLabel = t === 'OT' ? 'OT' : t === 'SO' ? 'SO' : `P${n}`;
       for (const pen of (period.penalties || [])) {
-        const player  = pen.committedByPlayer || '—';
+        const player  = ('#' + pen.committedByPlayer?.sweaterNumber + ' ' + pen.committedByPlayer?.firstName?.default + ' ' + pen.committedByPlayer?.lastName?.default) || '-';
         const teamA   = pen.teamAbbrev?.default || '';
         const type    = pen.descKey || pen.type || '—';
         const mins    = pen.duration != null ? `${pen.duration} min` : '';
         const time    = pen.timeInPeriod || '';
+        const drawnBy = ('#' + pen.drawnBy?.sweaterNumber + ' ' + pen.drawnBy?.firstName?.default + ' ' + pen.drawnBy?.lastName?.default) || '-';
         penRows.push(`<tr>
           <td class="sg-time">${pLabel} ${time}</td>
           <td><span style="color:var(--accent);font-weight:700">${teamA}</span></td>
           <td class="sg-scorer">${player}</td>
           <td style="color:var(--text-dim);font-size:0.75rem">${type}</td>
+          <td class="sg-scorer">${drawnBy}</td>
           <td style="font-family:'Roboto Mono',monospace;font-size:0.75rem">${mins}</td>
         </tr>`);
       }
@@ -3300,6 +3961,761 @@ function closeVideoModalDirect() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeVideoModalDirect();
 });
+
+// ═══════════════════════════════════════════════════════════
+// GANTT TIMELINE
+// ═══════════════════════════════════════════════════════════
+
+// State
+let ganttGames   = [];   // current set of game objects
+let ganttCollapsed = false;
+
+// Visual config — all sizes in logical px (scaled by devicePixelRatio)
+const GANTT = {
+  rowH:       36,   // height of each game row
+  rowGap:      6,   // vertical gap between rows
+  axisPad:    48,   // left margin for axis labels
+  rightPad:   16,   // right padding
+  topPad:     28,   // space above first bar (tick labels)
+  bottomPad:  12,   // space below last bar
+  barR:        5,   // bar corner radius
+  tickCount:  12,   // approximate number of time ticks
+  gameMins:  160,   // assumed game duration in minutes
+  // Colours matching Python color_discrete_map, translated to CSS
+  stateColour: {
+    LIVE:  '#22c55e',   // green
+    CRIT:  '#ef4444',   // red  (final minutes)
+    FUT:   '#ecc868',   // yellow-gold
+    PRE:   '#67e8f9',   // light-blue
+    FINAL: '#166534',   // dark-green
+    OFF:   '#166534',   // dark-green (same as FINAL)
+    PPD:   '#6b7280',   // grey
+  },
+  stateLabel: {
+    LIVE:  'Live',
+    CRIT:  'Critical',
+    FUT:   'Upcoming',
+    PRE:   'Pre-game',
+    FINAL: 'Final',
+    OFF:   'Final',
+    PPD:   'Postponed',
+  }
+};
+
+function ganttStateColour(state) {
+  return GANTT.stateColour[state] || '#4b6a8a';
+}
+
+// Called by renderGames every time the game list is updated
+function updateGantt(games) {
+  ganttGames = games.filter(g => g.startTimeUTC); // must have a start time
+  drawGantt();
+  buildGanttLegend();
+}
+
+function toggleGantt(btn) {
+  ganttCollapsed = !ganttCollapsed;
+  document.getElementById('ganttBody').classList.toggle('collapsed', ganttCollapsed);
+  btn.classList.toggle('collapsed', ganttCollapsed);
+  btn.title = ganttCollapsed ? 'Expand timeline' : 'Collapse timeline';
+  if (!ganttCollapsed) drawGantt(); // re-render on expand (canvas may have been zero-size)
+}
+
+function buildGanttLegend() {
+  const seen = new Map();
+  for (const g of ganttGames) {
+    const s = g.gameState;
+    if (!seen.has(s)) seen.set(s, GANTT.stateLabel[s] || s);
+  }
+  const el = document.getElementById('ganttLegend');
+  el.innerHTML = [...seen.entries()].map(([state, label]) =>
+    `<span class="gantt-legend-item">
+       <span class="gantt-legend-dot" style="background:${ganttStateColour(state)}"></span>
+       ${label}
+     </span>`
+  ).join('');
+}
+
+function drawGantt() {
+  if (ganttCollapsed || !ganttGames.length) return;
+
+  const canvas  = document.getElementById('ganttCanvas');
+  const wrap    = canvas.parentElement;
+  const dpr     = window.devicePixelRatio || 1;
+
+  const G = GANTT;
+  const n = ganttGames.length;
+
+  // Compute time domain
+  let tMin = Infinity, tMax = -Infinity;
+  for (const g of ganttGames) {
+    const start = new Date(g.startTimeUTC).getTime();
+    const end   = start + G.gameMins * 60 * 1000;
+    if (start < tMin) tMin = start;
+    if (end   > tMax) tMax = end;
+  }
+  // Pad 15 min on each side so bars don't touch the edges
+  tMin -= 15 * 60 * 1000;
+  tMax += 15 * 60 * 1000;
+  const tSpan = tMax - tMin;
+
+  // Canvas logical size
+  const logicalH = G.topPad + n * (G.rowH + G.rowGap) - G.rowGap + G.bottomPad;
+  const wrapW    = wrap.clientWidth || 600;
+  const logicalW = Math.max(wrapW, 480);
+
+  canvas.style.width  = logicalW + 'px';
+  canvas.style.height = logicalH + 'px';
+  canvas.width  = logicalW * dpr;
+  canvas.height = logicalH * dpr;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Background
+  ctx.fillStyle = '#0a1628';
+  ctx.fillRect(0, 0, logicalW, logicalH);
+
+  const plotW = logicalW - G.axisPad - G.rightPad;
+  const xOff  = G.axisPad;
+
+  // Helpers
+  const timeToX = (t) => xOff + ((t - tMin) / tSpan) * plotW;
+
+  // ── Grid lines + tick labels ──────────────────────────────
+  const tickMs   = niceTickInterval(tSpan, G.tickCount);
+  const tickStart = Math.ceil(tMin / tickMs) * tickMs;
+
+  ctx.font      = '10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+
+  for (let t = tickStart; t <= tMax; t += tickMs) {
+    const x = timeToX(t);
+    // Vertical grid line
+    ctx.strokeStyle = 'rgba(30,58,95,0.7)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, G.topPad - 10);
+    ctx.lineTo(x, logicalH - G.bottomPad);
+    ctx.stroke();
+
+    // Tick label
+    const label = formatTickTime(t);
+    ctx.fillStyle = '#4a6a85';
+    ctx.fillText(label, x, G.topPad - 14);
+  }
+
+  // ── Bars ─────────────────────────────────────────────────
+  for (let i = 0; i < n; i++) {
+    const g      = ganttGames[i];
+    const state  = g.gameState;
+    const colour = ganttStateColour(state);
+    const start  = new Date(g.startTimeUTC).getTime();
+    const end    = start + G.gameMins * 60 * 1000;
+
+    const x  = timeToX(start);
+    const x2 = timeToX(end);
+    const barW = Math.max(x2 - x, 4);
+    const y  = G.topPad + i * (G.rowH + G.rowGap);
+
+    // Bar fill
+    roundRect(ctx, x, y, barW, G.rowH, G.barR);
+    ctx.fillStyle = colour + '33'; // ~20% alpha fill
+    ctx.fill();
+
+    // Bar border
+    roundRect(ctx, x, y, barW, G.rowH, G.barR);
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = isLiveState(state) ? 2 : 1.5;
+    ctx.stroke();
+
+    // Pulsing glow for live games (simulated with extra shadow pass)
+    if (isLiveState(state)) {
+      ctx.shadowColor = colour;
+      ctx.shadowBlur  = 8;
+      roundRect(ctx, x, y, barW, G.rowH, G.barR);
+      ctx.strokeStyle = colour;
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // Label inside bar: "AWY @ HME"
+    const away  = g.awayTeam?.abbrev || '?';
+    const home  = g.homeTeam?.abbrev || '?';
+    const label = `${away} @ ${home}`;
+    const fontSize = 11;
+    ctx.font      = `600 ${fontSize}px 'Inter', sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#e2eaf4';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur  = 3;
+    // Clip text to bar
+    ctx.save();
+    ctx.beginPath();
+    roundRect(ctx, x + 1, y + 1, barW - 2, G.rowH - 2, G.barR - 1);
+    ctx.clip();
+    ctx.fillText(label, x + 8, y + G.rowH / 2 + fontSize / 2 - 1);
+    ctx.restore();
+    ctx.shadowBlur = 0;
+
+    // Score badge (right side of bar if room)
+    if (state === 'LIVE' || state === 'CRIT' || state === 'FINAL' || state === 'OFF') {
+      const awayScore = g.awayTeam?.score ?? '';
+      const homeScore = g.homeTeam?.score ?? '';
+      if (awayScore !== '' && homeScore !== '') {
+        const scoreStr = `${awayScore}–${homeScore}`;
+        ctx.font      = `700 10px 'Roboto Mono', monospace`;
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffd166';
+        ctx.shadowColor = 'rgba(0,0,0,0.9)';
+        ctx.shadowBlur  = 4;
+        ctx.save();
+        ctx.beginPath();
+        roundRect(ctx, x + 1, y + 1, barW - 2, G.rowH - 2, G.barR - 1);
+        ctx.clip();
+        ctx.fillText(scoreStr, x + barW - 7, y + G.rowH / 2 + 4);
+        ctx.restore();
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+
+  // ── "Now" vertical line ──────────────────────────────────
+  const now  = Date.now();
+  const nowEl = document.getElementById('ganttNowLine');
+  if (now >= tMin && now <= tMax) {
+    const nowX = timeToX(now);
+    // Draw on canvas
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur  = 6;
+    ctx.beginPath();
+    ctx.moveTo(nowX, G.topPad - 12);
+    ctx.lineTo(nowX, logicalH - G.bottomPad);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+
+    // "NOW" label at top
+    ctx.font      = '600 9px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#00ff88';
+    ctx.fillText('NOW', nowX, G.topPad - 14);
+  }
+
+  // ── Attach hover / click events ───────────────────────────
+  // Store hit areas so we can detect on mousemove/click
+  canvas._ganttHitAreas = ganttGames.map((g, i) => {
+    const start = new Date(g.startTimeUTC).getTime();
+    const end   = start + G.gameMins * 60 * 1000;
+    const x  = timeToX(start);
+    const x2 = timeToX(end);
+    const y  = G.topPad + i * (G.rowH + G.rowGap);
+    return { g, x, y, w: Math.max(x2 - x, 4), h: G.rowH };
+  });
+  canvas._tMin  = tMin;
+  canvas._tMax  = tMax;
+  canvas._tSpan = tSpan;
+  canvas._plotW = plotW;
+  canvas._xOff  = xOff;
+  canvas._logH  = logicalH;
+}
+
+// ── Gantt event handlers ─────────────────────────────────────
+(function attachGanttEvents() {
+  // We use event delegation on the canvas element.
+  // The canvas is not in the DOM yet at parse time, so we listen on document.
+  document.addEventListener('mousemove', (e) => {
+    const canvas = document.getElementById('ganttCanvas');
+    if (!canvas?._ganttHitAreas) return;
+    const tip = document.getElementById('ganttTooltip');
+    const rect = canvas.getBoundingClientRect();
+    const lx = e.clientX - rect.left;
+    const ly = e.clientY - rect.top;
+    const hit = canvas._ganttHitAreas.find(h =>
+      lx >= h.x && lx <= h.x + h.w && ly >= h.y && ly <= h.y + h.h
+    );
+    if (hit) {
+      const g = hit.g;
+      const away  = g.awayTeam?.abbrev || '?';
+      const home  = g.homeTeam?.abbrev || '?';
+      const state = g.gameState;
+      const awayScore = g.awayTeam?.score;
+      const homeScore = g.homeTeam?.score;
+      const start = new Date(g.startTimeUTC);
+      const startLocal = start.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+      const scoreStr = (awayScore != null && homeScore != null)
+        ? `<br><span style="color:#ffd166;font-weight:700">${away} ${awayScore} – ${homeScore} ${home}</span>`
+        : '';
+      const stateLabel = GANTT.stateLabel[state] || state;
+      const stateColour = ganttStateColour(state);
+      tip.innerHTML = `
+        <div style="font-weight:700;color:#e2eaf4">${away} @ ${home}</div>
+        <div style="color:#7a9bb5;font-size:0.68rem">Start: ${startLocal}</div>
+        <div><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${stateColour};margin-right:4px"></span>
+          <span style="color:${stateColour}">${stateLabel}</span>
+        </div>
+        ${scoreStr}
+      `;
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top  = (e.clientY - 10) + 'px';
+      canvas.style.cursor = 'pointer';
+    } else {
+      tip.style.display = 'none';
+      canvas.style.cursor = 'default';
+    }
+  });
+
+  document.addEventListener('mouseleave', () => {
+    document.getElementById('ganttTooltip').style.display = 'none';
+  }, true);
+
+  document.addEventListener('click', (e) => {
+    const canvas = document.getElementById('ganttCanvas');
+    if (!canvas?._ganttHitAreas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top  || e.clientY > rect.bottom) return;
+    const lx = e.clientX - rect.left;
+    const ly = e.clientY - rect.top;
+    const hit = canvas._ganttHitAreas.find(h =>
+      lx >= h.x && lx <= h.x + h.w && ly >= h.y && ly <= h.y + h.h
+    );
+    if (hit) {
+      document.getElementById('ganttTooltip').style.display = 'none';
+      selectGame(hit.g.id, hit.g);
+      // Scroll to the matching game card
+      const card = document.querySelector(`.game-card[data-game-id="${hit.g.id}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+
+  // Redraw on resize
+  window.addEventListener('resize', () => {
+    if (!ganttCollapsed && ganttGames.length) drawGantt();
+  });
+})();
+
+// ── Gantt utilities ──────────────────────────────────────────
+function isLiveState(state) {
+  return state === 'LIVE' || state === 'CRIT';
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function niceTickInterval(spanMs, targetCount) {
+  // Returns a "nice" interval in ms (e.g. 15min, 30min, 1h)
+  const niceMinutes = [5, 10, 15, 20, 30, 60, 90, 120, 180, 240, 360];
+  const targetMs = spanMs / targetCount;
+  for (const m of niceMinutes) {
+    if (m * 60 * 1000 >= targetMs) return m * 60 * 1000;
+  }
+  return 60 * 60 * 1000;
+}
+
+function formatTickTime(ms) {
+  const d = new Date(ms);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h >= 12 ? 'p' : 'a';
+  const h12  = ((h % 12) || 12);
+  return m === 0
+    ? `${h12}${ampm}`
+    : `${h12}:${String(m).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATE PICKER
+// ═══════════════════════════════════════════════════════════
+let dpViewDate = new Date(); // the month currently displayed in picker
+
+function toggleDatePicker() {
+  const popup = document.getElementById('datePicker');
+  if (popup.style.display === 'none' || !popup.style.display) {
+    dpViewDate = new Date(currentDate);
+    renderDatePicker();
+    popup.style.display = 'block';
+  } else {
+    closeDatePicker();
+  }
+}
+
+function closeDatePicker() {
+  document.getElementById('datePicker').style.display = 'none';
+}
+
+function dpShiftMonth(delta) {
+  dpViewDate = new Date(dpViewDate.getFullYear(), dpViewDate.getMonth() + delta, 1);
+  renderDatePicker();
+}
+
+function dpGoToday() {
+  closeDatePicker();
+  previousGamesSnapshot = {};
+  currentDate = new Date();
+  loadGames();
+}
+
+function renderDatePicker() {
+  const y = dpViewDate.getFullYear();
+  const m = dpViewDate.getMonth();
+  document.getElementById('dpMonthLabel').textContent =
+    new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+
+  const todayStr = fmtDate(new Date());
+  const selStr   = fmtDate(currentDate);
+
+  // First day of month, and how many cells to pad before it
+  const firstDow = new Date(y, m, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  let html = '';
+  // Leading empty cells
+  for (let i = 0; i < firstDow; i++) {
+    html += `<div class="dp-day dp-empty"></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const isSel   = dateStr === selStr;
+    let cls = 'dp-day';
+    if (isToday) cls += ' dp-today';
+    if (isSel)   cls += ' dp-selected';
+    html += `<div class="${cls}" onclick="dpSelectDate('${dateStr}')">${d}</div>`;
+  }
+  document.getElementById('dpGrid').innerHTML = html;
+}
+
+function dpSelectDate(dateStr) {
+  closeDatePicker();
+  previousGamesSnapshot = {};
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  currentDate = new Date(y, mo - 1, d);
+  loadGames();
+}
+
+// Close picker when clicking outside
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.date-display-wrap');
+  if (wrap && !wrap.contains(e.target)) closeDatePicker();
+}, true);
+
+
+// ═══════════════════════════════════════════════════════════
+// STATS TAB
+// ═══════════════════════════════════════════════════════════
+
+// ── State ────────────────────────────────────────────────────
+let statsScope     = 'league';        // 'league' | 'conference' | 'division' | 'team'
+let statsScopeVal  = '';              // the selected conference/division/team id
+let skaterCat      = 'points';        // current skater sort category
+let goalieCat      = 'savePctg';      // current goalie sort category
+let rawSkaterData  = [];              // all skater records from API
+let rawGoalieData  = [];              // all goalie records from API
+let cachedStandingsForStats = [];     // reuse standings for filter options
+const SEASON_STATS = '20242025';
+
+// Category display config  { key, label, decimals, ascending }
+const SKATER_CATS = {
+  points:              { label:'Points',    sec:['goals','assists'],          fmt: v => v },
+  goals:               { label:'Goals',     sec:['points','assists'],         fmt: v => v },
+  assists:             { label:'Assists',   sec:['points','goals'],           fmt: v => v },
+  plusMinus:           { label:'+/−',       sec:['goals','points'],           fmt: v => (v > 0 ? '+' : '') + v },
+  pim:                 { label:'PIM',       sec:['goals','points'],           fmt: v => v },
+  shots:               { label:'Shots',     sec:['goals','shootingPctg'],     fmt: v => v },
+  shootingPctg:        { label:'S%',        sec:['goals','shots'],            fmt: v => v?.toFixed(1) + '%' },
+  timeOnIcePerGame:    { label:'TOI/GP',    sec:['goals','points'],           fmt: v => fmtTOI(v) },
+  faceoffWinningPctg:  { label:'FO%',       sec:['gamesPlayed','points'],     fmt: v => v?.toFixed(1) + '%' },
+  powerPlayGoals:      { label:'PPG',       sec:['goals','points'],           fmt: v => v },
+  shorthandedGoals:    { label:'SHG',       sec:['goals','points'],           fmt: v => v },
+};
+const GOALIE_CATS = {
+  savePctg:       { label:'SV%',    sec:['wins','goalsAgainstAvg'],    fmt: v => v?.toFixed(3),    ascending: false },
+  wins:           { label:'Wins',   sec:['savePctg','goalsAgainstAvg'],fmt: v => v,                ascending: false },
+  goalsAgainst:   { label:'GA',     sec:['wins','savePctg'],           fmt: v => v,                ascending: true  },
+  goalsAgainstAvg:{ label:'GAA',    sec:['wins','savePctg'],           fmt: v => v?.toFixed(2),    ascending: true  },
+  shutouts:       { label:'SO',     sec:['wins','savePctg'],           fmt: v => v,                ascending: false },
+  saves:          { label:'Saves',  sec:['wins','savePctg'],           fmt: v => v,                ascending: false },
+  shotsAgainst:   { label:'SA',     sec:['wins','savePctg'],           fmt: v => v,                ascending: false },
+  gamesStarted:   { label:'GS',     sec:['wins','savePctg'],           fmt: v => v,                ascending: false },
+};
+
+function fmtTOI(secs) {
+  if (!secs && secs !== 0) return '—';
+  const m = Math.floor(secs / 60);
+  const s = Math.round(secs % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// ── Bootstrap ────────────────────────────────────────────────
+async function initStats() {
+  statsLoaded = true;
+  // Fetch skaters, goalies, and standings in parallel
+  try {
+    const [skaterData, goalieData, standingsData] = await Promise.all([
+      fetchNHL(`/skater-stats-leaders/current?categories=goals,assists,points&limit=50`),
+      fetchNHL(`/goalie-stats-leaders/current?categories=wins,gaa,savePct,shutouts&limit=50`),
+      fetchNHL('/standings/now'),
+    ]);
+    rawSkaterData = skaterData.data || [];
+    rawGoalieData = goalieData.data || [];
+    cachedStandingsForStats = standingsData.standings || [];
+    buildScopeValueOptions();
+    renderBothLists();
+  } catch(e) {
+    document.getElementById('skaterLeadersList').innerHTML = `<div class="error-msg">⚠️ ${e.message}</div>`;
+    document.getElementById('goalieLeadersList').innerHTML = `<div class="error-msg">⚠️ ${e.message}</div>`;
+  }
+}
+
+// ── Scope / filter ───────────────────────────────────────────
+function setStatsScope(scope, btn) {
+  statsScope = scope;
+  statsScopeVal = '';
+  document.querySelectorAll('.scope-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const wrap  = document.getElementById('statsScopeValueWrap');
+  const label = document.getElementById('statsScopeValueLabel');
+  if (scope === 'league') {
+    wrap.style.display = 'none';
+  } else {
+    wrap.style.display = 'flex';
+    label.textContent = scope.charAt(0).toUpperCase() + scope.slice(1);
+    buildScopeValueOptions();
+  }
+  renderBothLists();
+}
+
+function buildScopeValueOptions() {
+  if (statsScope === 'league') return;
+  const sel = document.getElementById('statsScopeValue');
+  const teams = cachedStandingsForStats;
+  let options = [];
+
+  if (statsScope === 'conference') {
+    const confs = [...new Set(teams.map(t => t.conferenceName))].filter(Boolean).sort();
+    options = confs.map(c => ({ val: c, label: c + ' Conference' }));
+  } else if (statsScope === 'division') {
+    const divs = [...new Set(teams.map(t => t.divisionName))].filter(Boolean).sort();
+    options = divs.map(d => ({ val: d, label: d + ' Division' }));
+  } else if (statsScope === 'team') {
+    options = teams
+      .map(t => ({ val: t.teamAbbrev?.default || '', label: t.teamName?.default || '' }))
+      .filter(o => o.val)
+      .sort((a,b) => a.label.localeCompare(b.label));
+  }
+
+  sel.innerHTML = options.map(o => `<option value="${o.val}">${o.label}</option>`).join('');
+  statsScopeVal = options[0]?.val || '';
+}
+
+function onScopeValueChange() {
+  statsScopeVal = document.getElementById('statsScopeValue').value;
+  renderBothLists();
+}
+
+// ── Category selection ───────────────────────────────────────
+function setSkaterCat(cat, btn) {
+  skaterCat = cat;
+  document.querySelectorAll('#skaterCatPills .cat-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSkaterLeaders();
+}
+function setGoalieCat(cat, btn) {
+  goalieCat = cat;
+  document.querySelectorAll('#goalieCatPills .cat-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGoalieLeaders();
+}
+
+// ── Filtering ────────────────────────────────────────────────
+function filterPlayers(players) {
+  if (statsScope === 'league' || !statsScopeVal) return players;
+  return players.filter(p => {
+    if (statsScope === 'conference') return getPlayerConference(p) === statsScopeVal;
+    if (statsScope === 'division')   return getPlayerDivision(p) === statsScopeVal;
+    if (statsScope === 'team')       return (p.teamAbbrevs || p.teamAbbrev || '') === statsScopeVal;
+    return true;
+  });
+}
+function getPlayerConference(p) {
+  const abbr = p.teamAbbrevs || p.teamAbbrev || '';
+  const t = cachedStandingsForStats.find(s => (s.teamAbbrev?.default || '') === abbr);
+  return t?.conferenceName || '';
+}
+function getPlayerDivision(p) {
+  const abbr = p.teamAbbrevs || p.teamAbbrev || '';
+  const t = cachedStandingsForStats.find(s => (s.teamAbbrev?.default || '') === abbr);
+  return t?.divisionName || '';
+}
+
+// ── Render both lists ────────────────────────────────────────
+function renderBothLists() {
+  renderSkaterLeaders();
+  renderGoalieLeaders();
+}
+
+// ── Skater leaders ───────────────────────────────────────────
+function renderSkaterLeaders() {
+  const el = document.getElementById('skaterLeadersList');
+  if (!rawSkaterData.length) {
+    el.innerHTML = '<div class="detail-loading"><div class="spinner"></div></div>';
+    return;
+  }
+  const cfg = SKATER_CATS[skaterCat] || SKATER_CATS.points;
+  let players = filterPlayers(rawSkaterData).filter(p => p[skaterCat] != null);
+  players.sort((a,b) => (b[skaterCat] ?? -999) - (a[skaterCat] ?? -999));
+  players = players.slice(0, 10);
+
+  if (!players.length) {
+    el.innerHTML = '<div class="detail-loading" style="color:var(--text-dim)">No players found for this filter.</div>';
+    return;
+  }
+
+  const maxVal = Math.max(...players.map(p => Math.abs(p[skaterCat] ?? 0))) || 1;
+
+  el.innerHTML = '<div class="leaders-list">' + players.map((p, i) => {
+    const rank       = i + 1;
+    const rankCls    = rank <= 3 ? ` rank-${rank}` : '';
+    const name       = p.skaterFullName || p.playerName || '?';
+    const team       = p.teamAbbrevs || p.teamAbbrev || '';
+    const pos        = p.positionCode || '';
+    const gp         = p.gamesPlayed ?? '';
+    const val        = p[skaterCat];
+    const barPct     = Math.abs(val ?? 0) / maxVal * 100;
+    const sec        = (cfg.sec || []).map(k => {
+      const sv = p[k];
+      if (sv == null) return '';
+      const km = SKATER_CATS[k];
+      const label = km?.label || k;
+      const fv = km?.fmt ? km.fmt(sv) : sv;
+      return `${label}: ${fv}`;
+    }).filter(Boolean).join(' · ');
+
+    const headshotUrl = `https://assets.nhle.com/mugs/nhl/${SEASON_STATS}/${team}/${p.playerId}.png`;
+    const logoUrl = getCachedTeamLogo(team);
+
+    return `<div class="leader-row">
+      <div class="leader-rank${rankCls}">${rank}</div>
+      <img class="leader-headshot" src="${headshotUrl}"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="leader-headshot-placeholder" style="display:none">🏒</div>
+      <div class="leader-row-inner">
+        <div class="leader-bar" style="width:${barPct.toFixed(1)}%"></div>
+        <div class="leader-info">
+          <div class="leader-name">${name}</div>
+          <div class="leader-meta">
+            ${logoUrl ? `<img class="leader-team-logo" src="${logoUrl}" alt="${team}">` : ''}
+            <span>${team}</span>
+            ${pos ? `<span>· ${pos}</span>` : ''}
+            ${gp ? `<span>· ${gp} GP</span>` : ''}
+          </div>
+        </div>
+        <div>
+          <div class="leader-stat-primary">${cfg.fmt ? cfg.fmt(val) : val}</div>
+          ${sec ? `<div class="leader-stat-secondary">${sec}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ── Goalie leaders ───────────────────────────────────────────
+function renderGoalieLeaders() {
+  const el = document.getElementById('goalieLeadersList');
+  if (!rawGoalieData.length) {
+    el.innerHTML = '<div class="detail-loading"><div class="spinner"></div></div>';
+    return;
+  }
+  const cfg = GOALIE_CATS[goalieCat] || GOALIE_CATS.savePctg;
+  // Filter out goalies with too few starts for rate stats
+  const minGP = (goalieCat === 'savePctg' || goalieCat === 'goalsAgainstAvg') ? 10 : 1;
+  let players = filterPlayers(rawGoalieData).filter(p =>
+    p[goalieCat] != null && (p.gamesStarted ?? p.gamesPlayed ?? 0) >= minGP
+  );
+  const asc = cfg.ascending ?? false;
+  players.sort((a,b) => asc
+    ? (a[goalieCat] ?? 999) - (b[goalieCat] ?? 999)
+    : (b[goalieCat] ?? -999) - (a[goalieCat] ?? -999)
+  );
+  players = players.slice(0, 10);
+
+  if (!players.length) {
+    el.innerHTML = '<div class="detail-loading" style="color:var(--text-dim)">No goalies found for this filter.</div>';
+    return;
+  }
+
+  const vals     = players.map(p => Math.abs(p[goalieCat] ?? 0));
+  const maxVal   = Math.max(...vals) || 1;
+
+  el.innerHTML = '<div class="leaders-list">' + players.map((p, i) => {
+    const rank    = i + 1;
+    const rankCls = rank <= 3 ? ` rank-${rank}` : '';
+    const name    = p.goalieFullName || p.playerName || '?';
+    const team    = p.teamAbbrevs || p.teamAbbrev || '';
+    const gp      = p.gamesPlayed ?? '';
+    const gs      = p.gamesStarted ?? '';
+    const val     = p[goalieCat];
+    const barPct  = Math.abs(val ?? 0) / maxVal * 100;
+    const sec     = (cfg.sec || []).map(k => {
+      const sv = p[k];
+      if (sv == null) return '';
+      const km = GOALIE_CATS[k];
+      const label = km?.label || k;
+      const fv = km?.fmt ? km.fmt(sv) : sv;
+      return `${label}: ${fv}`;
+    }).filter(Boolean).join(' · ');
+
+    const headshotUrl = `https://assets.nhle.com/mugs/nhl/${SEASON_STATS}/${team}/${p.playerId}.png`;
+    const logoUrl = getCachedTeamLogo(team);
+
+    return `<div class="leader-row">
+      <div class="leader-rank${rankCls}">${rank}</div>
+      <img class="leader-headshot" src="${headshotUrl}"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="leader-headshot-placeholder" style="display:none">🥅</div>
+      <div class="leader-row-inner">
+        <div class="leader-bar" style="width:${barPct.toFixed(1)}%"></div>
+        <div class="leader-info">
+          <div class="leader-name">${name}</div>
+          <div class="leader-meta">
+            ${logoUrl ? `<img class="leader-team-logo" src="${logoUrl}" alt="${team}">` : ''}
+            <span>${team}</span>
+            ${gs ? `<span>· ${gs} GS</span>` : gp ? `<span>· ${gp} GP</span>` : ''}
+          </div>
+        </div>
+        <div>
+          <div class="leader-stat-primary">${cfg.fmt ? cfg.fmt(val) : val}</div>
+          ${sec ? `<div class="leader-stat-secondary">${sec}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ── Team logo helper (reuse logos already in standings cache) ─
+function getCachedTeamLogo(abbr) {
+  if (!abbr) return '';
+  const t = cachedStandingsForStats.find(s => (s.teamAbbrev?.default || '') === abbr);
+  return t?.teamLogo || '';
+}
 
 // ═══════════════════════════════════════════════════════════
 // BOOT
